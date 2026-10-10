@@ -38,6 +38,7 @@ export interface VehicleParams {
   frontGrip: number;
   rearGrip: number;
   handbrakeGrip: number; // rear grip multiplier while handbrake held
+  looseGrip: number; // extra grip multiplier on gravel/grass (rally tyres > slicks)
   lateralStiffness: number; // N per m/s of side slip
   // Steering / handling
   maxSteer: number; // radians at low speed
@@ -82,6 +83,7 @@ export const defaultParams = (): VehicleParams => ({
   frontGrip: 1.3,
   rearGrip: 1.2,
   handbrakeGrip: 0.45,
+  looseGrip: 1,
   lateralStiffness: 9000,
 
   maxSteer: 0.6,

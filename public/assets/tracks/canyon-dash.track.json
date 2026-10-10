@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "Canyon Dash",
+  "theme": "desert",
+  "closed": true,
+  "laps": 3,
+  "controlPoints": [
+    { "p": [0, 0, 0], "width": 15 },
+    { "p": [0, 2, 180], "width": 15 },
+    { "p": [40, 6, 320], "width": 14, "bank": -6 },
+    { "p": [160, 10, 385], "width": 14, "bank": -4 },
+    { "p": [300, 14, 345], "width": 14 },
+    { "p": [385, 12, 225], "width": 13, "surface": "gravel" },
+    { "p": [360, 8, 85], "width": 13, "surface": "gravel" },
+    { "p": [425, 4, -40], "width": 13, "surface": "gravel" },
+    { "p": [385, 0, -175], "width": 14, "bank": -6 },
+    { "p": [260, -2, -230], "width": 14 },
+    { "p": [140, 6, -170], "width": 14 },
+    { "p": [60, 2, -120], "width": 15 },
+    { "p": [10, 0, -60], "width": 15 }
+  ],
+  "checkpoints": [0.25, 0.5, 0.75],
+  "scenery": { "seed": 4242, "density": 0.8 },
+  "terrain": { "seed": 31, "amplitude": 40 }
+}

@@ -24,6 +24,7 @@ export class AIDriver {
   private loc = newLocation();
   private hint = { index: 0 };
   private stuckTime = 0;
+  private reverseTime = 0;
   private readonly baseTorque: number;
   private readonly controls: Controls = { steer: 0, throttle: 0, brake: 0, handbrake: false, reset: false };
 
@@ -70,12 +71,25 @@ export class AIDriver {
     c.brake = speed > allowed + 1.5 ? THREE.MathUtils.clamp((speed - allowed) / 4, 0, 1) : 0;
     c.handbrake = false;
 
-    // --- Recovery: stuck against something or far off the road → respawn on the track.
+    // Traction control: back off when the rear tyres are sliding (powerful rear-drive cars).
+    const rearSlip = Math.max(v.wheels[2].slip, v.wheels[3].slip);
+    if (rearSlip > 0.12) c.throttle *= Math.max(0.15, 1 - (rearSlip - 0.12) * 3);
+
+    // --- Recovery: nose against a wall → reverse out with opposite lock; still stuck → respawn.
     const offRoad = Math.abs(l.lateral) > TrackGround.wallOffset(l.width) + 2;
     this.stuckTime = Math.abs(speed) < 1.5 || offRoad ? this.stuckTime + dt : 0;
     c.reset = false;
-    if (this.stuckTime > 2.5) {
+    if (this.reverseTime > 0) {
+      this.reverseTime -= dt;
+      c.throttle = 0;
+      c.brake = 1; // brake held at a standstill = reverse
+      c.steer = -c.steer;
+    } else if (this.stuckTime > 0.8 && this.stuckTime < 1 && !offRoad) {
+      this.reverseTime = 1.1;
+    }
+    if (this.stuckTime > 3.5) {
       this.stuckTime = 0;
+      this.reverseTime = 0;
       v.respawn();
     }
     return c;

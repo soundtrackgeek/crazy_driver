@@ -13,6 +13,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the stack, approach, graphics/asset pipelin
 - **M5 (audio)** done: all sound is synthesised with Web Audio (no sample files): an engine that follows the revs and throttle, tyre squeal, gravel crunch, wind, impacts and landings, race jingles, a speech announcer, a 3-2-1-GO countdown, an original two-song tracker soundtrack, and your own music files.
 - **M6 (track editor)** done: build tracks in a 3D editor with live preview, undo/redo, validation warnings, a saved-track library, JSON download/upload and one-key test drives.
 - **M7 (race game)** done: menus, three modes (Arcade, Time Trial, Quick Race), AI opponents with racing lines and catch-up, car-to-car collisions, race positions, results, pause, ghost cars and per-track records.
+- **M8 (content)** done: three cars with distinct handling and eight colour schemes, and four themed tracks plus the test circuit.
 
 ## Getting started
 Requires Node.js 20+.
@@ -29,7 +30,23 @@ npm test         # physics tests (Vitest)
 - **Time Trial:** drive alone against a ghost of your best lap. Best lap and best race times are saved per track layout.
 - **Quick Race:** choose the laps (1–9) and opponents (1–7).
 
-Pick the track (built-in or saved from the editor) and your car's colours in the setup menu. Menus work with arrows + Enter/Esc, mouse/touch, or a gamepad (d-pad/stick, A, B). Press **Esc** or **P** in a race to pause.
+Pick the track (built-in or saved from the editor), your car and its colours in the setup menu.
+
+### Cars
+| Car | Drive | Character |
+|---|---|---|
+| Rally Hatch | 4WD | All-rounder with extra grip on gravel and grass |
+| Muscle Coupe | Rear | Heavy, big torque, slides easily; best top speed, weak off-road |
+| Wedge GT | Mid-engine, rear | Light, lots of grip and downforce on tarmac; nervous on dirt |
+
+### Tracks
+| Track | Theme | Notes |
+|---|---|---|
+| Canyon Dash | Desert | Fast, banked sweepers and a gravel back section |
+| Alpine Pass | Alpine | Short and twisty, climbs about 30 m, gravel switchback |
+| Coastal Run | Coastal | Fast seaside sweepers and a chicane |
+| Forest Rally | Forest | Narrow, almost all gravel |
+| Test Circuit | Grassland | Mixed layout with a hairpin | Menus work with arrows + Enter/Esc, mouse/touch, or a gamepad (d-pad/stick, A, B). Press **Esc** or **P** in a race to pause.
 
 `?track=<file>` skips the menus and starts a quick race on that track.
 

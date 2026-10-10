@@ -11,13 +11,15 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cars import car_rally  # noqa: E402
+from cars import car_gt, car_muscle, car_rally  # noqa: E402
 from lib.export import export_glb, render_preview, reset_scene  # noqa: E402
 from lib.mesh import vertex_color_material  # noqa: E402
 from props import props  # noqa: E402
 
 ASSETS = {
     "car_rally": car_rally.build,
+    "car_muscle": car_muscle.build,
+    "car_gt": car_gt.build,
     "props": props.build,
 }
 

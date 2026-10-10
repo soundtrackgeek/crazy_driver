@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "name": "Coastal Run",
+  "theme": "coastal",
+  "closed": true,
+  "laps": 3,
+  "controlPoints": [
+    { "p": [0, 1, 0], "width": 15 },
+    { "p": [0, 1, 200], "width": 15 },
+    { "p": [30, 2, 330], "width": 14, "bank": -5 },
+    { "p": [120, 3, 400], "width": 14 },
+    { "p": [250, 4, 400], "width": 14, "bank": 4 },
+    { "p": [330, 3, 330], "width": 14 },
+    { "p": [345, 2, 220], "width": 13 },
+    { "p": [318, 2, 160], "width": 13 },
+    { "p": [326, 2, 95], "width": 13 },
+    { "p": [305, 1, 15], "width": 13 },
+    { "p": [320, 1, -80], "width": 14, "bank": 5 },
+    { "p": [260, 1, -170], "width": 14 },
+    { "p": [140, 2, -200], "width": 14 },
+    { "p": [40, 1, -150], "width": 15, "bank": 4 },
+    { "p": [0, 1, -70], "width": 15 }
+  ],
+  "checkpoints": [0.25, 0.5, 0.75],
+  "scenery": { "seed": 2024, "density": 0.7 },
+  "terrain": { "seed": 5, "amplitude": 16 }
+}

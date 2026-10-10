@@ -241,7 +241,7 @@ export class Vehicle {
 
       // Grip budget.
       const handbrake = c.handbrake && !w.front;
-      let mu = (w.front ? p.frontGrip : p.rearGrip) * surf.grip;
+      let mu = (w.front ? p.frontGrip : p.rearGrip) * surf.grip * (w.surface === 'asphalt' ? 1 : p.looseGrip);
       if (handbrake) mu *= p.handbrakeGrip;
       const maxF = mu * load;
 

@@ -8,6 +8,7 @@ import { Announcer, Sfx } from './audio/Sfx';
 import { RaceSession, MODE_NAMES, type Mode, type SessionResult } from './game/RaceSession';
 import { formatTime } from './game/RaceState';
 import { LIVERIES } from './game/Liveries';
+import { CARS } from './game/Cars';
 import { Records, trackKey } from './game/Records';
 import { Track } from './track/Track';
 import { parseTrack, type TrackData } from './track/TrackData';
@@ -69,7 +70,7 @@ async function main() {
   let hIdx = isTouch ? 0 : 1;
 
   const retro = new RetroRenderer(heights[hIdx]);
-  const [assets, tracks] = await Promise.all([new Assets().load(['car_rally', 'props']), trackList()]);
+  const [assets, tracks] = await Promise.all([new Assets().load([...CARS.map((c) => c.model), 'props']), trackList()]);
   const input = new Input(retro.renderer.domElement);
   const audio = new AudioEngine();
   const sfx = new Sfx(audio);
@@ -82,7 +83,7 @@ async function main() {
   const deps = { assets, retro, input, audio, sfx, announcer };
 
   let session: RaceSession | null = null;
-  const setup = { track: 0, livery: 0, laps: 3, opponents: 5 };
+  const setup = { track: 0, car: 0, livery: 0, laps: 3, opponents: 5 };
   let lastRace: { data: TrackData; mode: Mode } | null = null;
   let debugPanel: { destroy(): void } | null = null;
 
@@ -96,6 +97,7 @@ async function main() {
         laps: mode === 'arcade' || mode === 'test' ? data.laps : setup.laps,
         opponents: mode === 'arcade' ? 5 : setup.opponents,
         livery: LIVERIES[setup.livery],
+        car: CARS[setup.car],
         ...extra,
       },
       deps,
@@ -171,7 +173,7 @@ async function main() {
 
   const setupMenu = (mode: Mode) => {
     sfx.select();
-    const step = (key: 'track' | 'livery', n: number, d: number) => {
+    const step = (key: 'track' | 'car' | 'livery', n: number, d: number) => {
       setup[key] = (setup[key] + d + n) % n;
       render();
     };
@@ -185,7 +187,8 @@ async function main() {
         title: MODE_NAMES[mode],
         items: [
           { label: 'TRACK', value: entry.name, left: () => step('track', tracks.length, -1), right: () => step('track', tracks.length, 1) },
-          { label: 'CAR', value: LIVERIES[setup.livery].name, left: () => step('livery', LIVERIES.length, -1), right: () => step('livery', LIVERIES.length, 1) },
+          { label: 'CAR', value: CARS[setup.car].name, left: () => step('car', CARS.length, -1), right: () => step('car', CARS.length, 1) },
+          { label: 'COLOUR', value: LIVERIES[setup.livery].name, left: () => step('livery', LIVERIES.length, -1), right: () => step('livery', LIVERIES.length, 1) },
           ...(mode !== 'arcade' ? [{ label: 'LAPS', value: String(setup.laps), left: () => clampSet('laps', -1, 9), right: () => clampSet('laps', 1, 9) }] : []),
           ...(mode === 'quick'
             ? [{ label: 'OPPONENTS', value: String(setup.opponents), left: () => clampSet('opponents', -1, 7), right: () => clampSet('opponents', 1, 7) }]
@@ -193,11 +196,19 @@ async function main() {
           { label: 'START', action: () => void go(mode) },
           { label: 'BACK', action: mainMenu },
         ],
-        html: recordFor(entry),
+        html: recordFor(entry) + carCard(),
         onBack: mainMenu,
       });
     };
     render();
+  };
+
+  const bars = (n: number) => '&#9608;'.repeat(n) + '<span class="dim">' + '&#9608;'.repeat(5 - n) + '</span>';
+  const carCard = () => {
+    const c = CARS[setup.car];
+    return `<div class="car-card"><p>${c.blurb}</p><table>
+      <tr><td>SPEED</td><td>${bars(c.stats.speed)}</td><td>ACCEL</td><td>${bars(c.stats.accel)}</td></tr>
+      <tr><td>GRIP</td><td>${bars(c.stats.grip)}</td><td>OFFROAD</td><td>${bars(c.stats.offroad)}</td></tr></table></div>`;
   };
 
   const go = async (mode: Mode) => {

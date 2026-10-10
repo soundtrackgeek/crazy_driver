@@ -15,6 +15,7 @@ import { Hud } from '../ui/Hud';
 import type { Theme } from '../world/Themes';
 import type { Sky } from '../world/Sky';
 import { AIDriver, makePersonalities } from './AIDriver';
+import { CARS, carParams, type CarSpec } from './Cars';
 import { CarView } from './CarView';
 import { ChaseCamera } from './ChaseCamera';
 import { LIVERIES, type NamedLivery } from './Liveries';
@@ -40,6 +41,7 @@ export interface SessionConfig {
   laps: number;
   opponents: number;
   livery: NamedLivery;
+  car: CarSpec;
   startDist?: number;
 }
 
@@ -144,12 +146,13 @@ export class RaceSession {
     for (let k = 0; k < total; k++) {
       const isPlayer = mode !== 'attract' && k === total - 1; // player starts at the back of the grid
       const livery = isPlayer ? config.livery : others[k % others.length];
-      const vehicle = new Vehicle(new TrackGround(track));
+      const spec = isPlayer ? config.car : CARS[(k + 1) % CARS.length];
+      const vehicle = new Vehicle(new TrackGround(track), carParams(spec));
       const dist = solo ? (config.startDist ?? -20) : -14 - Math.floor(k / 2) * 9;
       const s = track.sampleAtDist(dist);
       const lateral = solo ? 0 : k % 2 === 0 ? -3 : 3;
       vehicle.reset(s.pos.clone().addScaledVector(s.right, lateral), Math.atan2(s.tangent.x, s.tangent.z));
-      const view = new CarView(vehicle, deps.assets, livery);
+      const view = new CarView(vehicle, deps.assets, livery, spec.model);
       this.scene.add(view.root);
       const ai = isPlayer ? null : new AIDriver(track, line, vehicle, personalities[k] ?? personalities[0]);
       const racer: Racer = {
@@ -211,7 +214,7 @@ export class RaceSession {
 
   private makeGhostMesh() {
     const material = new THREE.MeshBasicMaterial({ color: 0x80c0ff, transparent: true, opacity: 0.35, depthWrite: false });
-    const body = new THREE.Mesh(applyLivery(this.deps.assets.geometry('car_rally_body'), this.config.livery), material);
+    const body = new THREE.Mesh(applyLivery(this.deps.assets.geometry(`${this.config.car.model}_body`), this.config.livery), material);
     const g = new THREE.Group();
     g.add(body);
     g.visible = false;

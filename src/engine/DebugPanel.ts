@@ -32,6 +32,7 @@ export async function createDebugPanel(vehicle: Vehicle) {
   add(tyres, 'frontGrip', 0.3, 2.5, 0.05);
   add(tyres, 'rearGrip', 0.3, 2.5, 0.05);
   add(tyres, 'handbrakeGrip', 0.05, 1, 0.05);
+  add(tyres, 'looseGrip', 0.5, 1.5, 0.05);
   add(tyres, 'lateralStiffness', 1000, 20000, 100);
   add(tyres, 'maxSteer', 0.1, 1, 0.01);
   add(tyres, 'highSpeedSteer', 0.1, 1, 0.01);

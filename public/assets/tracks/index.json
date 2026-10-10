@@ -1,3 +1,7 @@
 [
+  { "file": "canyon-dash", "name": "Canyon Dash" },
+  { "file": "alpine-pass", "name": "Alpine Pass" },
+  { "file": "coastal-run", "name": "Coastal Run" },
+  { "file": "forest-rally", "name": "Forest Rally" },
   { "file": "test-circuit", "name": "Test Circuit" }
 ]

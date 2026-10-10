@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.0] - 2026-10-10
+### Added
+- M8 content:
+  - Muscle Coupe (rear drive, 560 Nm, fastback, twin stripes, ducktail) and Wedge GT (mid-engine, high grip and downforce, louvres, big wing) Blender models, with shared car helpers in `blender/cars/common.py`.
+  - Car registry (`src/game/Cars.ts`) with per-car handling and menu stats; setup menu has separate Car and Colour rows with a stats card; opponents drive a mix of all three cars.
+  - `looseGrip` vehicle parameter: rally tyres grip better on gravel and grass, slicks worse.
+  - Four themed tracks: Canyon Dash (desert), Alpine Pass (alpine), Coastal Run (coastal), Forest Rally (forest).
+  - Content tests: every built-in track must validate without errors and be lapped by the AI with no respawns; every car must be lapped by the AI.
+- AI: traction control (eases off when the rear tyres slide) and reversing out when stuck against a wall before respawning.
+
 ## [0.10.0] - 2026-10-10
 ### Added
 - M7 race game:
