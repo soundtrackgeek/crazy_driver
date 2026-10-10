@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2] - 2026-10-10
+### Added
+- The game is live on GitHub Pages: https://soundtrackgeek.github.io/crazy_driver/ (link in the README).
+
+### Changed
+- The Pages workflow now deploys automatically on every push to `master`.
+
 ## [1.0.1] - 2026-10-10
 ### Changed
 - GitHub Actions use `actions/checkout@v5` and `actions/setup-node@v5` (Node 24 runtime) instead of the deprecated Node 20 versions.

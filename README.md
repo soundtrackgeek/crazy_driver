@@ -2,6 +2,8 @@
 
 A 90s-style arcade racer (think Screamer / Sega Rally on DOS) for the browser, built with three.js. Low-poly "blocky but nice" 3D, procedural scenery, Blender-generated assets and a built-in track editor.
 
+**Play it:** https://soundtrackgeek.github.io/crazy_driver/ · **Track editor:** https://soundtrackgeek.github.io/crazy_driver/editor.html
+
 See [docs/PLAN.md](docs/PLAN.md) for the stack, approach, graphics/asset pipeline, audio and milestones.
 
 ## Status
@@ -65,7 +67,7 @@ Load a different track with `?track=<name>`, which reads `public/assets/tracks/<
 - **Touch controls:** show or hide the on-screen control hints.
 
 ## Deployment
-`.github/workflows/ci.yml` runs lint, type check, tests and build on every push. `.github/workflows/deploy.yml` builds and publishes `dist/` to GitHub Pages. Enable Pages first (*Settings → Pages → Source: GitHub Actions*), then run the workflow from the Actions tab. The build uses relative paths, so it works under any sub-path.
+`.github/workflows/ci.yml` runs lint, type check, tests and build on every push. `.github/workflows/deploy.yml` builds and publishes `dist/` to GitHub Pages (https://soundtrackgeek.github.io/crazy_driver/) on every push to `master`, and can also be run from the Actions tab. The build uses relative paths, so it works under any sub-path.
 
 TypeScript 7 runs side by side with the TypeScript 6 API package (`typescript` is aliased to `@typescript/typescript6` for typescript-eslint; `tsc` comes from `@typescript/native`). `.npmrc` sets `legacy-peer-deps` for that reason.
 

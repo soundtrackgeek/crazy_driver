@@ -1,8 +1,10 @@
 name: Deploy to GitHub Pages
 
-# Manual for now: enable Pages (Settings > Pages > Source: GitHub Actions) first,
-# then this can be switched to run on every push to master.
+# Publishes to https://soundtrackgeek.github.io/crazy_driver/ on every push to master
+# (or manually from the Actions tab).
 on:
+  push:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
