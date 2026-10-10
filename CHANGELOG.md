@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2026-10-10
+### Changed
+- GitHub Actions use `actions/checkout@v5` and `actions/setup-node@v5` (Node 24 runtime) instead of the deprecated Node 20 versions.
+
 ## [1.0.0] - 2026-10-10
 ### Added
 - M9 polish:
