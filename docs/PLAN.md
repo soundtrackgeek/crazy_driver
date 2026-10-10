@@ -16,9 +16,9 @@ An arcade racer in the spirit of **Screamer** (1995) and **Sega Rally** (DOS/PC 
 ### Scope for v1.0
 - 3 cars (each with 2–3 paint schemes), 4 tracks (desert/canyon, alpine/snow, coastal city, forest/rally), plus any custom tracks.
 - Modes: **Arcade** (checkpoints + timer), **Time Trial** (ghost car), **Quick Race** (vs. 5 AI).
-- Keyboard + gamepad. Desktop browsers first.
+- Keyboard + gamepad on desktop; **touch controls on mobile** (on-screen steering/pedals, optional tilt steering).
 
-Out of scope for v1: online multiplayer, damage modelling, career mode (can come later).
+Out of scope for v1: online multiplayer, damage modelling, career mode (can come later). **Split-screen 2-player** is a far-off stretch goal — keep camera/HUD/input per-player (no singletons) so it stays possible.
 
 ---
 
@@ -31,7 +31,7 @@ Out of scope for v1: online multiplayer, damage modelling, career mode (can come
 | Rendering | **three.js** (WebGL2) | Requested; mature, great glTF support. |
 | Physics | **Custom arcade vehicle model** (raycast suspension) + optional **Rapier** (`@dimforge/rapier3d-compat`) for car-vs-car/prop collisions | Arcade feel is easier to tune with hand-written physics than with a realistic rigid-body vehicle. |
 | Audio | **Web Audio API** directly (thin wrapper) | Need pitch-shifted engine loops, crossfades, doppler — Howler is too high-level for engines. |
-| Input | Keyboard + **Gamepad API** | No dependency needed. |
+| Input | Keyboard + **Gamepad API** + **Touch** (Pointer Events) | No dependency needed; all sources map to one abstract `Controls` state. |
 | UI / menus | Plain DOM + CSS with a pixel font (e.g. "Press Start 2P" / custom bitmap font) | Easy, retro-styled, overlays the canvas. |
 | Editor UI | Same app, separate route (`/editor`), DOM panels + three.js viewport | Reuses the engine; WYSIWYG. |
 | State | Small hand-rolled store / event bus | Avoid framework weight in the game loop. |
@@ -193,7 +193,7 @@ Speedometer/tacho (pixel-art dial), gear, lap/time, position, minimap from the s
 | Tyre squeal / gravel crunch | Looping samples, volume = slip amount, chosen by surface. |
 | Impacts, gear shift, turbo blow-off, checkpoint, countdown beeps | One-shot samples. |
 | Announcer ("Checkpoint!", "Final lap!", "Game over… yeah!") | Recorded voice or TTS processed with lo-fi filter (bitcrush) for 90s flavour. |
-| Music | Upbeat 90s-style rock/techno tracks. Options: compose in a tracker (OpenMPT/MilkyTracker → .ogg), or use CC0/CC-BY music; optionally play real `.mod/.xm` with a JS module player (e.g. chiptune3 / libopenmpt wasm) for extra authenticity. |
+| Music | **Original** upbeat 90s-style rock/techno, composed in a tracker (OpenMPT/MilkyTracker), shipped as `.ogg` (optionally real `.xm` via a JS module player). **Custom music**: players can load their own MP3/OGG files (file picker, stored in IndexedDB) to build a playlist that replaces or mixes with the built-in soundtrack. |
 
 **Sound creation**: start with **procedural synthesis** (tools/sfx — Web Audio offline rendering or a Python script generating WAVs: sawtooth+noise engines, filtered noise for gravel/tyres) so we're never blocked, and swap in better CC0 samples (freesound.org, filtered by CC0 licence) as they're found. All audio shipped as `.ogg` (+ `.m4a` fallback for Safari if needed). Master bus: compressor + optional "Sound Blaster" low-pass/bitcrush toggle.
 
@@ -212,7 +212,7 @@ Speedometer/tacho (pixel-art dial), gear, lap/time, position, minimap from the s
 | **M6** | Track editor | Edit, test-drive, save/load, undo. |
 | **M7** | Race game | AI opponents, positions, menus, modes (Arcade / Time Trial / Quick Race), ghosts. |
 | **M8** | Content | 3 cars × liveries, 4 themed tracks built in the editor. |
-| **M9** | Polish | Particles, skid marks, camera feel, DOS-mode post effect, gamepad, settings, performance pass, deploy. |
+| **M9** | Polish | Particles, skid marks, camera feel, DOS-mode post effect, gamepad, touch controls & mobile perf profile, custom MP3 playlist, settings, performance pass, deploy. |
 
 Each milestone ends playable. Feel tuning (physics constants, camera, audio) happens continuously and is exposed via a debug panel (`lil-gui`) in dev builds.
 
@@ -231,7 +231,7 @@ Each milestone ends playable. Feel tuning (physics constants, camera, audio) hap
 
 ---
 
-## 11. Open Questions
-- Desktop only, or also touch controls for mobile?
-- Prefer original music made in a tracker, or licensed CC tracks?
-- Split-screen 2-player as a stretch goal?
+## 11. Decisions
+- **Mobile:** supported with touch controls (left/right steer zones or virtual wheel, gas/brake buttons, optional tilt). Mobile gets a lower internal resolution and reduced scenery density.
+- **Music:** original tracker-composed soundtrack, plus the option for players to use their own MP3 files.
+- **Split-screen 2-player:** very distant stretch goal; architecture keeps it possible but no work is planned.
