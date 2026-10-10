@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.0] - 2026-10-10
+### Added
+- M6 track editor (`editor.html`, a second Vite page):
+  - 3D viewport with the real road, terrain and props; orbit/pan/zoom camera and top view.
+  - Control-point handles: drag to move, Shift+drag for height, double-click to insert into the nearest segment, Delete to remove.
+  - Live road-only rebuild while dragging, full scenery rebuild on release.
+  - Side panel for track (name, theme, laps), scenery (prop/terrain seeds, density, hill height) and point (position, width, banking, surface) settings.
+  - Snapshot undo/redo (a whole drag is one step).
+  - Validation: overlapping sections, very tight corners, very steep slopes, with 3D markers.
+  - Browser track library, JSON download/upload, autosaved working copy.
+  - Test drive from the selected point (T); Esc in the game returns to the editor.
+- Game: `?track=@editor` and `?track=@saved:<name>`, `start=<metres>` spawn position, and `test=1` mode without countdown.
+- Editor-state and validation tests.
+
+### Changed
+- Vite builds both pages with relative asset paths (`base: './'`).
+
 ## [0.8.0] - 2026-10-10
 ### Added
 - M5 audio, fully synthesised with Web Audio:

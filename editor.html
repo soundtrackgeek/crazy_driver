@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crazy Driver Editor</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0a0a28; color: #fff; font: 13px monospace; overflow: hidden; }
+      body { display: flex; }
+      #panel { width: 300px; flex: none; height: 100%; overflow-y: auto; box-sizing: border-box; padding: 12px 14px; background: #10103a; border-right: 3px solid #ff0; }
+      #viewport { flex: 1; position: relative; min-width: 0; }
+      #viewport canvas { display: block; }
+      h1 { margin: 0 0 10px; font-size: 18px; color: #ff0; text-shadow: 2px 2px #c00; letter-spacing: 2px; }
+      h2 { margin: 16px 0 6px; font-size: 13px; color: #ff0; border-bottom: 1px dashed #445; padding-bottom: 2px; }
+      label { display: flex; align-items: center; gap: 6px; margin: 5px 0; }
+      label > input[type=text], label > select { flex: 1; min-width: 0; }
+      label > input[type=range] { flex: 1; min-width: 0; accent-color: #ff0; }
+      label > output { width: 3.5em; text-align: right; color: #0f0; }
+      input, select, button, .button { font: inherit; background: #223; color: #fff; border: 2px solid #556; padding: 2px 6px; box-sizing: border-box; }
+      input[type=number] { width: 70px; }
+      .xyz input[type=number] { width: 66px; }
+      .xyz { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+      button, .button { cursor: pointer; border-color: #ff0; }
+      button:disabled { opacity: 0.4; cursor: default; }
+      button.primary { background: #c00; }
+      .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+      .row select { flex: 1; min-width: 0; }
+      .check { justify-content: flex-start; }
+      .stats, .hint { color: #99a; margin: 4px 0; line-height: 1.5; }
+      .flash { background: #0a0; color: #fff; padding: 4px 6px; margin: 6px 0; }
+      .issues { list-style: none; padding: 0; margin: 0; }
+      .issues li { padding: 2px 0; cursor: pointer; }
+      .issues li.error { color: #f55; }
+      .issues li.warning { color: #fa4; }
+      .issues li.ok { color: #0f0; cursor: default; }
+      @media (max-width: 700px) { body { flex-direction: column-reverse; } #panel { width: 100%; height: 45%; border-right: 0; border-top: 3px solid #ff0; } }
+    </style>
+  </head>
+  <body>
+    <div id="panel"></div>
+    <div id="viewport"></div>
+    <script type="module" src="/src/editor/main.ts"></script>
+  </body>
+</html>

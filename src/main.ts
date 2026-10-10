@@ -9,6 +9,7 @@ import { Vehicle } from './physics/Vehicle';
 import { Track } from './track/Track';
 import { TrackGround } from './track/TrackGround';
 import { parseTrack } from './track/TrackData';
+import { TrackLibrary } from './track/TrackLibrary';
 import { Minimap } from './ui/Minimap';
 import { Assets } from './engine/Assets';
 import { getTheme } from './world/Themes';
@@ -19,7 +20,13 @@ import { Announcer, Sfx } from './audio/Sfx';
 import { AudioPanel } from './ui/AudioPanel';
 import type { Controls } from './engine/Input';
 
+/** `@editor` = the editor's working copy, `@saved:Name` = a track saved in the browser, else a file name. */
 async function loadTrack(name: string) {
+  if (name === '@editor' || name.startsWith('@saved:')) {
+    const data = name === '@editor' ? TrackLibrary.loadCurrent() : TrackLibrary.load(name.slice(7));
+    if (!data) throw new Error(`Track "${name}" not found in this browser`);
+    return new Track(data);
+  }
   const res = await fetch(`${import.meta.env.BASE_URL}assets/tracks/${name}.track.json`);
   if (!res.ok) throw new Error(`Could not load track "${name}" (${res.status})`);
   return new Track(parseTrack(await res.json()));
@@ -41,8 +48,10 @@ async function main() {
   console.info(`[scene] built in ${(performance.now() - t0).toFixed(0)} ms`);
   const ground = new TrackGround(track);
   const vehicle = new Vehicle(ground);
-  // Rolling start: spawn 20 m behind the line.
-  const spawn = track.sampleAtDist(-20);
+  // Rolling start 20 m behind the line, or anywhere on the lap for editor test drives.
+  const testMode = params.has('test');
+  const startDist = params.has('start') ? Number(params.get('start')) || 0 : -20;
+  const spawn = track.sampleAtDist(startDist);
   vehicle.reset(spawn.pos, Math.atan2(spawn.tangent.x, spawn.tangent.z));
   const carView = new CarView(vehicle, assets, { primary: 0xd01818, secondary: 0xf0f0f0 });
   scene.add(carView.root);
@@ -95,16 +104,23 @@ async function main() {
   // --- Race start: "press any key", then a 3-2-1-GO countdown with the car held on the brakes.
   let phase: 'waiting' | 'countdown' | 'racing' = 'waiting';
   let countdown = 3;
-  showBanner('PRESS ANY KEY', Infinity);
+  showBanner(testMode ? 'TEST DRIVE' : 'PRESS ANY KEY', Infinity);
   const begin = () => {
     if (phase !== 'waiting') return;
-    phase = 'countdown';
-    countdown = 3;
-    showBanner('3', 1);
-    audio.onUnlock(() => {
-      sfx.beep();
-      music.start();
-    });
+    if (testMode) {
+      // Editor test drives skip the countdown.
+      phase = 'racing';
+      showBanner('GO!', 0.8);
+      audio.onUnlock(() => music.start());
+    } else {
+      phase = 'countdown';
+      countdown = 3;
+      showBanner('3', 1);
+      audio.onUnlock(() => {
+        sfx.beep();
+        music.start();
+      });
+    }
     window.removeEventListener('keydown', begin);
     window.removeEventListener('pointerdown', begin);
   };
@@ -120,6 +136,7 @@ async function main() {
   resize();
 
   window.addEventListener('keydown', (e) => {
+    if (testMode && e.code === 'Escape' && !audioPanel.open) location.href = 'editor.html';
     if (e.code === 'F2') {
       e.preventDefault();
       hIdx = (hIdx + 1) % heights.length;
@@ -188,7 +205,7 @@ async function main() {
         `LAST ${formatTime(race.lastLap)}  BEST ${formatTime(race.bestLap)}\n\n` +
         `${String(Math.round(Math.abs(vehicle.speed) * 3.6)).padStart(3)} km/h  gear ${gear}\n` +
         `[${rpmBar}]\n` +
-        `\n${w}x${h} ${fps.toFixed(0)}fps  F1 tune F2 res R reset M sound`;
+        `\n${w}x${h} ${fps.toFixed(0)}fps  F1 tune F2 res R reset M sound${testMode ? ' ESC editor' : ''}`;
     },
   ).start();
 }

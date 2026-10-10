@@ -37,6 +37,7 @@ export function createTrackScene(track: Track, assets: Assets, theme: Theme) {
       new THREE.MeshLambertMaterial({ color: theme.water.color }),
     );
     water.position.y = minY + theme.water.level;
+    water.name = 'water';
     scene.add(water);
   }
 
