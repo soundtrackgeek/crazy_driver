@@ -31,6 +31,9 @@ const _t = new THREE.Vector3();
 const _qInv = new THREE.Quaternion();
 const _dq = new THREE.Quaternion();
 
+/** Horizontal body corners (local) used for wall collisions. */
+const WALL_CORNERS = [-1, 1].flatMap((x) => [-2.15, 2.15].map((z) => new THREE.Vector3(x * 0.95, 0.1, z)));
+
 /** Body corners (local) used for body-vs-ground penalty collisions. */
 const CORNERS = [-1, 1].flatMap((x) =>
   [-0.35, 0.65].flatMap((y) => [-2.1, 2.1].map((z) => new THREE.Vector3(x * 0.9, y, z))),
@@ -56,6 +59,7 @@ export class Vehicle {
   speed = 0; // signed forward speed, m/s
   slip = 0; // 0..1 overall tyre slip, for sound/particles later
   grounded = 0; // wheels in contact
+  wallHit = 0; // impact speed of the last wall hit this step (for sound/shake later)
 
   private force = new THREE.Vector3();
   private torque = new THREE.Vector3();
@@ -107,6 +111,13 @@ export class Vehicle {
     this.prevQuat.copy(this.quat);
   }
 
+  /** Put the car back on the track centre (or upright in place on open ground). */
+  respawn() {
+    const r = this.ground.respawn?.(this.pos.x, this.pos.z);
+    if (r) this.reset(r.pos, r.yaw);
+    else this.reset(this.pos, this.yaw);
+  }
+
   get yaw() {
     _fwd.set(0, 0, 1).applyQuaternion(this.quat);
     return Math.atan2(_fwd.x, _fwd.z);
@@ -124,7 +135,7 @@ export class Vehicle {
     this.prevQuat.copy(this.quat);
 
     // Manual reset (edge-triggered) and automatic flip recovery.
-    if (c.reset && !this.resetHeld) this.reset(this.pos, this.yaw);
+    if (c.reset && !this.resetHeld) this.respawn();
     this.resetHeld = c.reset;
 
     const up = _up.set(0, 1, 0).applyQuaternion(this.quat);
@@ -301,10 +312,7 @@ export class Vehicle {
 
     // --- Integrate (semi-implicit Euler).
     this.vel.addScaledVector(this.force, dt / p.mass);
-    _qInv.copy(this.quat).invert();
-    const tl = this.torque.applyQuaternion(_qInv);
-    tl.set(tl.x / this.inertia.x, tl.y / this.inertia.y, tl.z / this.inertia.z).applyQuaternion(this.quat);
-    this.angVel.addScaledVector(tl, dt);
+    this.angVel.addScaledVector(this.applyInvInertia(this.torque), dt);
     this.angVel.multiplyScalar(1 - 0.5 * dt);
 
     this.pos.addScaledVector(this.vel, dt);
@@ -315,5 +323,49 @@ export class Vehicle {
       this.quat.z + _dq.z * 0.5 * dt,
       this.quat.w + _dq.w * 0.5 * dt,
     ).normalize();
+
+    this.collideWalls();
+  }
+
+  /** World-space inverse inertia applied to v (in place). */
+  private applyInvInertia(v: THREE.Vector3) {
+    _qInv.copy(this.quat).invert();
+    v.applyQuaternion(_qInv);
+    v.set(v.x / this.inertia.x, v.y / this.inertia.y, v.z / this.inertia.z);
+    return v.applyQuaternion(this.quat);
+  }
+
+  /** Impulse-based collisions of the body's four horizontal corners with track walls. */
+  private collideWalls() {
+    const g = this.ground;
+    if (!g.wall) return;
+    const restitution = 0.15;
+    const friction = 0.35;
+    this.wallHit = 0;
+    for (const corner of WALL_CORNERS) {
+      const pt = _p.copy(corner).applyQuaternion(this.quat).add(this.pos);
+      const hit = g.wall(pt.x, pt.z);
+      if (!hit) continue;
+      const n = _n.set(hit.nx, 0, hit.nz);
+      this.pos.addScaledVector(n, hit.penetration);
+      _r.subVectors(pt, this.pos);
+      const pv = _pv.crossVectors(this.angVel, _r).add(this.vel);
+      const vn = pv.dot(n);
+      if (vn >= 0) continue;
+
+      // Effective mass along the normal: 1/m + n · ((I⁻¹ (r × n)) × r)
+      const rn = this.applyInvInertia(_t.crossVectors(_r, n));
+      const k = 1 / this.params.mass + n.dot(rn.cross(_r));
+      const j = (-(1 + restitution) * vn) / k;
+      // Coulomb friction along the wall slows scraping.
+      const tangent = pv.addScaledVector(n, -vn);
+      const vt = tangent.length();
+      const jt = vt > 1e-3 ? Math.min(friction * j, vt * this.params.mass * 0.25) / vt : 0;
+      _f.copy(n).multiplyScalar(j).addScaledVector(tangent, -jt);
+
+      this.vel.addScaledVector(_f, 1 / this.params.mass);
+      this.angVel.add(this.applyInvInertia(_t.crossVectors(_r, _f)));
+      this.wallHit = Math.max(this.wallHit, -vn);
+    }
   }
 }

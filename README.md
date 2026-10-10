@@ -7,6 +7,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the stack, approach, graphics/asset pipelin
 ## Status
 - **M0 (scaffold)** done: Vite + TypeScript + three.js, fixed-timestep loop, low-resolution retro renderer, unified keyboard/gamepad/touch input.
 - **M1 (drivable car)** done: arcade rigid-body vehicle (raycast suspension, grip-budget tyres, auto gearbox, handbrake drifts, jumps with self-levelling, flip recovery) on a test ground with a ramp, bumps, gravel hills and grass.
+- **M2 (spline tracks)** done: tracks defined as JSON control points, built into a banked road with kerbs, edge lines, walls, start gate and checkpoint gates; laps, checkpoints, lap times, wrong-way warning and a minimap.
 
 ## Getting started
 Requires Node.js 20+.
@@ -16,6 +17,28 @@ npm install
 npm run dev      # dev server at http://localhost:5173
 npm run build    # type-check + production build into dist/
 npm test         # physics tests (Vitest)
+```
+
+Load a different track with `?track=<name>`, which reads `public/assets/tracks/<name>.track.json` (default: `test-circuit`).
+
+## Track format
+Tracks are JSON files (`*.track.json`). The road is a smooth closed curve through the control points:
+
+```jsonc
+{
+  "version": 1,
+  "name": "Test Circuit",
+  "theme": "grassland",
+  "closed": true,
+  "laps": 3,
+  "controlPoints": [
+    { "p": [0, 0, 0], "width": 14 },                 // x, height, z in metres
+    { "p": [-30, 3, 250], "width": 13, "bank": 6 },  // bank in degrees, + = right side lower
+    { "p": [-280, 6, 190], "surface": "gravel" }     // asphalt (default) | gravel | grass
+  ],
+  "checkpoints": [0.25, 0.5, 0.75],                  // fractions of the lap
+  "scenery": { "seed": 1234, "density": 0.7 }
+}
 ```
 
 ## Controls

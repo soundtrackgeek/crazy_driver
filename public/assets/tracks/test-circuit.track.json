@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "name": "Test Circuit",
+  "theme": "grassland",
+  "closed": true,
+  "laps": 3,
+  "controlPoints": [
+    { "p": [0, 0, 0], "width": 14 },
+    { "p": [0, 0, 140], "width": 14 },
+    { "p": [-30, 3, 250], "width": 13, "bank": 6 },
+    { "p": [-120, 8, 300], "width": 12, "bank": 5 },
+    { "p": [-220, 10, 270], "width": 12 },
+    { "p": [-280, 6, 190], "width": 12, "surface": "gravel" },
+    { "p": [-260, 4, 90], "width": 11, "surface": "gravel" },
+    { "p": [-300, 2, 10], "width": 11, "surface": "gravel" },
+    { "p": [-330, 0, -80], "width": 12 },
+    { "p": [-290, 0, -150], "width": 13, "bank": 8 },
+    { "p": [-210, 6, -130], "width": 12, "bank": 4 },
+    { "p": [-150, 12, -60], "width": 12 },
+    { "p": [-90, 8, -120], "width": 12 },
+    { "p": [-40, 4, -200], "width": 13 },
+    { "p": [40, 2, -210], "width": 13, "bank": 5 },
+    { "p": [90, 0, -140], "width": 13, "bank": 5 },
+    { "p": [40, 0, -100], "width": 14 },
+    { "p": [10, 0, -50], "width": 14 }
+  ],
+  "checkpoints": [0.25, 0.5, 0.75],
+  "scenery": { "seed": 1234, "density": 0.7 }
+}

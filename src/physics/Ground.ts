@@ -13,10 +13,20 @@ export const SURFACES: Record<Surface, SurfaceInfo> = {
   grass: { grip: 0.62, rolling: 0.02 },
 };
 
-/** Anything the car can drive on. Later the spline track implements this too. */
+export interface WallHit {
+  nx: number; // horizontal unit normal pointing back towards the track
+  nz: number;
+  penetration: number;
+}
+
+/** Anything the car can drive on: the test ground or a spline track. */
 export interface Ground {
   height(x: number, z: number): number;
   surface(x: number, z: number): Surface;
+  /** Optional vertical barriers. */
+  wall?(x: number, z: number): WallHit | null;
+  /** Optional safe reset point near (x, z). */
+  respawn?(x: number, z: number): { pos: THREE.Vector3; yaw: number };
 }
 
 const EPS = 0.25;
