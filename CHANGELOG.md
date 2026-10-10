@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0] - 2026-10-10
+### Added
+- M1 arcade vehicle physics: rigid body with 4 raycast suspension springs, anti-roll bars and bump stops, grip-budget tyre model per surface (asphalt/gravel/grass), AWD drivetrain with 6-speed auto gearbox and capped reverse, handbrake drifts, aero drag and downforce.
+- In-air steering and self-levelling, automatic flip recovery, R to reset.
+- Test ground with jump ramp, bumpy section, gravel hills and grass, rendered as a flat-shaded vertex-coloured mesh.
+- Car placeholder with wheels that spin, steer and follow suspension travel.
+- Dev-only lil-gui tuning panel (F1) with Copy JSON.
+- HUD with speed, gear, rpm bar, slip and surface.
+- Vitest physics tests (`npm test`).
+
+### Changed
+- Chase camera follows the car's smoothed flat heading.
+
+### Removed
+- M0 kinematic placeholder car.
+
 ## [0.3.0] - 2026-10-10
 ### Added
 - M0 scaffold: Vite + TypeScript + three.js project.
