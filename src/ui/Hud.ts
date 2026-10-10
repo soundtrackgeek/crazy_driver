@@ -1,6 +1,10 @@
 import { formatTime } from '../game/RaceState';
 import type { Track } from '../track/Track';
 import { Minimap } from './Minimap';
+import { settings } from '../game/Settings';
+
+/** Fired on window when the on-screen pause button is pressed. */
+export const PAUSE_EVENT = 'crazy-driver:pause';
 
 export interface HudData {
   trackName: string;
@@ -33,16 +37,24 @@ export class Hud {
   private bannerEl = document.getElementById('banner')!;
   private timer = el('div', 'timer');
   private position = el('div', 'position');
+  private pauseButton = el('button', 'pause-button');
+  private touch = el('div', 'touch-overlay');
   private bannerTimer = 0;
 
   constructor(track: Track) {
     this.minimap = new Minimap(track);
-    document.body.append(this.minimap.canvas, this.timer, this.position);
+    this.pauseButton.textContent = '❚❚';
+    this.pauseButton.title = 'Pause (Esc)';
+    this.pauseButton.addEventListener('click', () => window.dispatchEvent(new Event(PAUSE_EVENT)));
+    // Touch control hints over the zones Input uses: left half steers, right half gas (top) / brake (bottom).
+    this.touch.innerHTML = '<div class="steer">&#9664; DRAG TO STEER &#9654;</div><div class="gas">GAS</div><div class="brake">BRAKE</div>';
+    this.touch.hidden = !settings.touchControls;
+    document.body.append(this.minimap.canvas, this.timer, this.position, this.pauseButton, this.touch);
     this.show(true);
   }
 
   show(visible: boolean) {
-    for (const e of [this.text, this.minimap.canvas, this.timer, this.position]) e.style.display = visible ? '' : 'none';
+    for (const e of [this.text, this.minimap.canvas, this.timer, this.position, this.pauseButton, this.touch]) e.style.display = visible ? '' : 'none';
     if (!visible) this.bannerEl.style.visibility = 'hidden';
   }
 
@@ -82,6 +94,8 @@ export class Hud {
     this.minimap.canvas.remove();
     this.timer.remove();
     this.position.remove();
+    this.pauseButton.remove();
+    this.touch.remove();
     this.text.textContent = '';
     this.bannerEl.style.visibility = 'hidden';
   }

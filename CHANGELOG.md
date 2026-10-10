@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0] - 2026-10-10
+### Added
+- M9 polish:
+  - Wheel effects for all nearby cars: gravel dust (snow on alpine), grass debris and tyre smoke as pooled pixel particles, and skid marks as a ring buffer of quads, driven by tyre slip and surface.
+  - Camera: chase, far chase and bumper views (C), trauma-based shake on wall hits, landings and rough ground, and a horizontal FOV cap of 105° for ultra-wide windows.
+  - DOS mode (F3): palette reduction with a 4x4 ordered dither at the internal resolution, plus faint scanlines, in the upscale shader.
+  - Settings menu (DOS mode, resolution, camera, quality, touch controls), saved in localStorage.
+  - Quality profiles: *low* uses about half the triangles (vegetation x0.45, 12 m terrain cells, shorter fog) and is the default on touch devices.
+  - Touch control overlay and an on-screen pause button.
+  - Draw-call counter in the HUD footer.
+  - ESLint (flat config, typescript-eslint, `@typescript-eslint/no-shadow`), `npm run lint`.
+  - GitHub Actions: CI (lint, type check, tests, build) and a manual GitHub Pages deploy workflow.
+
+### Changed
+- TypeScript 7 now runs side by side with the TypeScript 6 API package so typescript-eslint works.
+
+### Fixed
+- Shadowed variable in the sky cloud loop (found by the new lint rule).
+
 ## [0.11.0] - 2026-10-10
 ### Added
 - M8 content:

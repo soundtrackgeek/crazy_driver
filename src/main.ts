@@ -14,7 +14,8 @@ import { Track } from './track/Track';
 import { parseTrack, type TrackData } from './track/TrackData';
 import { TrackLibrary } from './track/TrackLibrary';
 import { AudioPanel } from './ui/AudioPanel';
-import { ordinal } from './ui/Hud';
+import { ordinal, PAUSE_EVENT } from './ui/Hud';
+import { CAMERAS, RESOLUTIONS, saveSettings, settings } from './game/Settings';
 import { Menu } from './ui/Menu';
 import { getTheme } from './world/Themes';
 
@@ -33,7 +34,7 @@ async function fetchTrack(file: string) {
 
 /** Built-in tracks from the manifest plus tracks saved from the editor. */
 async function trackList(): Promise<TrackEntry[]> {
-  let builtIn: { file: string; name: string }[] = [];
+  let builtIn: { file: string; name: string }[];
   try {
     builtIn = await (await fetch(`${BASE}assets/tracks/index.json`)).json();
   } catch {
@@ -65,11 +66,8 @@ async function loadNamedTrack(name: string) {
 async function main() {
   const params = new URLSearchParams(location.search);
   const testMode = params.has('test');
-  const isTouch = matchMedia('(pointer: coarse)').matches;
-  const heights = [200, 270, 400]; // chunky / normal / sharp
-  let hIdx = isTouch ? 0 : 1;
-
-  const retro = new RetroRenderer(heights[hIdx]);
+  const retro = new RetroRenderer(settings.resolution);
+  retro.setDosMode(settings.dosMode);
   const [assets, tracks] = await Promise.all([new Assets().load([...CARS.map((c) => c.model), 'props']), trackList()]);
   const input = new Input(retro.renderer.domElement);
   const audio = new AudioEngine();
@@ -150,11 +148,49 @@ async function main() {
         { label: 'TIME TRIAL', action: () => setupMenu('timetrial') },
         { label: 'QUICK RACE', action: () => setupMenu('quick') },
         { label: 'TRACK EDITOR', action: () => (location.href = 'editor.html') },
+        { label: 'SETTINGS', action: settingsMenu },
         { label: 'SOUND & MUSIC', action: () => audioPanel.toggle() },
       ],
       footer: 'Arcade: beat the clock, checkpoints add time &middot; Time trial: race your ghost',
       onBack: titleScreen,
     });
+  };
+
+  const applySettings = () => {
+    saveSettings();
+    retro.setLowHeight(settings.resolution);
+    retro.setDosMode(settings.dosMode);
+    if (session) {
+      retro.resize(session.chase.camera);
+      session.setCameraMode(settings.camera);
+    }
+  };
+
+  const settingsMenu = () => {
+    sfx.select();
+    const cycle = <T,>(list: T[], value: T, d: number) => list[(list.indexOf(value) + d + list.length) % list.length];
+    const resNames: Record<number, string> = { 200: 'CHUNKY (200)', 270: 'NORMAL (270)', 400: 'SHARP (400)' };
+    const row = (label: string, value: string, change: (d: number) => void) => ({
+      label,
+      value,
+      left: () => (change(-1), applySettings(), render()),
+      right: () => (change(1), applySettings(), render()),
+    });
+    const render = () =>
+      menu.show({
+        title: 'SETTINGS',
+        items: [
+          row('DOS MODE', settings.dosMode ? 'ON' : 'OFF', () => (settings.dosMode = !settings.dosMode)),
+          row('RESOLUTION', resNames[settings.resolution] ?? String(settings.resolution), (d) => (settings.resolution = cycle(RESOLUTIONS, settings.resolution, d))),
+          row('CAMERA', settings.camera.toUpperCase(), (d) => (settings.camera = cycle(CAMERAS, settings.camera, d))),
+          row('QUALITY', settings.quality.toUpperCase(), () => (settings.quality = settings.quality === 'high' ? 'low' : 'high')),
+          row('TOUCH CONTROLS', settings.touchControls ? 'SHOW' : 'HIDE', () => (settings.touchControls = !settings.touchControls)),
+          { label: 'BACK', action: mainMenu },
+        ],
+        footer: 'Quality applies from the next race &middot; F2 resolution, F3 DOS mode, C camera in game',
+        onBack: mainMenu,
+      });
+    render();
   };
 
   const recordCache = new Map<string, string>();
@@ -268,9 +304,17 @@ async function main() {
   window.addEventListener('keydown', (e) => {
     if (e.code === 'F2') {
       e.preventDefault();
-      hIdx = (hIdx + 1) % heights.length;
-      retro.setLowHeight(heights[hIdx]);
-      if (session) retro.resize(session.chase.camera);
+      settings.resolution = RESOLUTIONS[(RESOLUTIONS.indexOf(settings.resolution) + 1) % RESOLUTIONS.length];
+      applySettings();
+    }
+    if (e.code === 'F3') {
+      e.preventDefault();
+      settings.dosMode = !settings.dosMode;
+      applySettings();
+    }
+    if (e.code === 'KeyC' && !menu.visible) {
+      settings.camera = CAMERAS[(CAMERAS.indexOf(settings.camera) + 1) % CAMERAS.length];
+      applySettings();
     }
     // Skip keys a menu already handled (e.g. Esc that just closed the pause menu).
     if (e.defaultPrevented || menu.visible || audioPanel.open || !session || session.config.mode === 'attract') return;
@@ -280,6 +324,12 @@ async function main() {
     }
   });
   window.addEventListener('resize', () => session && retro.resize(session.chase.camera));
+  window.addEventListener(PAUSE_EVENT, () => {
+    if (!menu.visible && session && session.config.mode !== 'attract') {
+      if (testMode) location.href = 'editor.html';
+      else pauseMenu();
+    }
+  });
 
   new Loop(
     (dt) => session?.update(dt),

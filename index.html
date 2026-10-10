@@ -28,9 +28,15 @@
       .audio-button { position: fixed; left: 12px; bottom: 12px; width: 40px; height: 40px; font: bold 20px monospace; background: rgba(10, 10, 40, 0.8); color: #ff0; border: 2px solid #ff0; cursor: pointer; z-index: 5; }
       .timer { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); color: #ff0; font: bold 56px monospace; text-shadow: 4px 4px #c00, 6px 6px #000; pointer-events: none; }
       .timer.low { color: #f33; text-shadow: 4px 4px #600, 6px 6px #000; }
-      .position { position: fixed; top: 40px; right: 16px; color: #ff0; font: bold 44px monospace; text-shadow: 4px 4px #c00, 6px 6px #000; pointer-events: none; }
+      .position { position: fixed; top: 48px; right: 16px; color: #ff0; font: bold 44px monospace; text-shadow: 4px 4px #c00, 6px 6px #000; pointer-events: none; }
       .position small { font-size: 22px; }
       [hidden] { display: none !important; }
+      .pause-button { position: fixed; left: 60px; bottom: 12px; width: 40px; height: 34px; font: bold 16px monospace; background: rgba(10, 10, 40, 0.8); color: #ff0; border: 2px solid #ff0; cursor: pointer; z-index: 5; }
+      .touch-overlay { position: fixed; inset: 0; pointer-events: none; font: bold 14px monospace; color: rgba(255, 255, 0, 0.55); }
+      .touch-overlay > div { position: absolute; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 0, 0.35); }
+      .touch-overlay .steer { left: 12px; bottom: 64px; width: calc(50% - 24px); height: 70px; }
+      .touch-overlay .gas { right: 12px; top: 40%; width: 110px; height: calc(20% - 8px); background: rgba(0, 160, 0, 0.18); }
+      .touch-overlay .brake { right: 12px; bottom: 12px; width: 110px; height: calc(40% - 24px); background: rgba(200, 0, 0, 0.18); }
       .menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 20, 0.35); z-index: 8; }
       .menu-box { min-width: min(420px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; padding: 18px 24px; background: rgba(10, 10, 40, 0.88); border: 3px solid #ff0; box-shadow: 8px 8px 0 #000; color: #fff; font: 16px monospace; text-align: center; }
       .menu h1 { margin: 0 0 6px; font-size: 40px; color: #ff0; text-shadow: 4px 4px #c00, 6px 6px #000; letter-spacing: 4px; }

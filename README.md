@@ -14,6 +14,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the stack, approach, graphics/asset pipelin
 - **M6 (track editor)** done: build tracks in a 3D editor with live preview, undo/redo, validation warnings, a saved-track library, JSON download/upload and one-key test drives.
 - **M7 (race game)** done: menus, three modes (Arcade, Time Trial, Quick Race), AI opponents with racing lines and catch-up, car-to-car collisions, race positions, results, pause, ghost cars and per-track records.
 - **M8 (content)** done: three cars with distinct handling and eight colour schemes, and four themed tracks plus the test circuit.
+- **M9 (polish)** done: dust/snow/grass/smoke particles and skid marks, camera shake and three camera views, optional DOS mode (dithered 256-colour look), settings menu, touch control overlay and pause button, low-quality profile, ESLint, CI and a GitHub Pages workflow. **v1.0.**
 
 ## Getting started
 Requires Node.js 20+.
@@ -22,7 +23,8 @@ Requires Node.js 20+.
 npm install
 npm run dev      # dev server at http://localhost:5173
 npm run build    # type-check + production build into dist/
-npm test         # physics tests (Vitest)
+npm test         # tests (Vitest)
+npm run lint     # ESLint
 ```
 
 ## Game modes
@@ -53,6 +55,19 @@ Pick the track (built-in or saved from the editor), your car and its colours in 
 Open the track editor at `http://localhost:5173/editor.html`.
 
 Load a different track with `?track=<name>`, which reads `public/assets/tracks/<name>.track.json` (default: `test-circuit`). Override its theme with `?theme=grassland|forest|desert|alpine|coastal`.
+
+## Settings
+*Settings* in the main menu (saved in the browser):
+- **DOS mode:** 256-colour-style ordered dither and faint scanlines.
+- **Resolution:** chunky (200 lines), normal (270) or sharp (400). Also F2.
+- **Camera:** chase, far chase or bumper. Also C.
+- **Quality:** *low* halves the scenery (sparser vegetation, coarser terrain, shorter fog). It is the default on touch devices.
+- **Touch controls:** show or hide the on-screen control hints.
+
+## Deployment
+`.github/workflows/ci.yml` runs lint, type check, tests and build on every push. `.github/workflows/deploy.yml` builds and publishes `dist/` to GitHub Pages. Enable Pages first (*Settings → Pages → Source: GitHub Actions*), then run the workflow from the Actions tab. The build uses relative paths, so it works under any sub-path.
+
+TypeScript 7 runs side by side with the TypeScript 6 API package (`typescript` is aliased to `@typescript/typescript6` for typescript-eslint; `tsc` comes from `@typescript/native`). `.npmrc` sets `legacy-peer-deps` for that reason.
 
 ## Sound & music
 Press **M** (or the ♪ button) to open the sound panel. It has master, music and effects volumes, the music mode, the announcer toggle and your music library.
@@ -118,7 +133,9 @@ Tracks are JSON files (`*.track.json`). The road is a smooth closed curve throug
 ## Controls
 | Action | Keyboard | Gamepad | Touch |
 |---|---|---|---|
-| Pause | Esc / P | – | – |
+| Pause | Esc / P | – | ❚❚ button |
+| Camera (chase / far / bumper) | C | – | – |
+| DOS mode on/off | F3 | – | – |
 | Steer | Arrows / A D | Left stick | Drag on left half |
 | Gas | Up / W | RT or A | Right half, top |
 | Brake / reverse | Down / S | LT | Right half, bottom |

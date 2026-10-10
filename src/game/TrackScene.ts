@@ -6,16 +6,18 @@ import { buildTrackMeshes } from '../track/TrackMesh';
 import { Sky } from '../world/Sky';
 import { Terrain } from '../world/Terrain';
 import type { Theme } from '../world/Themes';
+import { qualityProfile } from './Settings';
 
 /**
  * Everything around the road: themed light and fog, the terrain, the sky
  * backdrop, optional water and seeded props (the same track always looks the same).
  */
-export function createTrackScene(track: Track, assets: Assets, theme: Theme) {
+export function createTrackScene(track: Track, assets: Assets, theme: Theme, quality = qualityProfile('high')) {
   const scene = new THREE.Scene();
   const fogColor = new THREE.Color(theme.fog.color);
   scene.background = fogColor;
-  scene.fog = new THREE.Fog(fogColor, theme.fog.near, theme.fog.far);
+  const fogFar = theme.fog.far * quality.fogScale;
+  scene.fog = new THREE.Fog(fogColor, theme.fog.near * quality.fogScale, fogFar);
 
   scene.add(new THREE.HemisphereLight(theme.hemi.sky, theme.hemi.ground, theme.hemi.intensity));
   const sun = new THREE.DirectionalLight(theme.sun.color, theme.sun.intensity);
@@ -23,11 +25,11 @@ export function createTrackScene(track: Track, assets: Assets, theme: Theme) {
   scene.add(sun);
 
   // Everything beyond the fog is invisible, so the camera stops just past it and the sky fits inside.
-  const farPlane = theme.fog.far + 40;
+  const farPlane = fogFar + 40;
   const sky = new Sky(theme, track.data.terrain?.seed ?? 3, farPlane * 0.95);
   scene.add(sky.group);
 
-  const terrain = new Terrain(track, theme);
+  const terrain = new Terrain(track, theme, { cell: quality.terrainCell });
   scene.add(terrain.buildMesh());
 
   if (theme.water) {
@@ -42,7 +44,7 @@ export function createTrackScene(track: Track, assets: Assets, theme: Theme) {
   }
 
   scene.add(buildTrackMeshes(track, theme));
-  scene.add(new PropPlacer(track, assets, terrain, theme).build());
+  scene.add(new PropPlacer(track, assets, terrain, theme, quality.vegetation).build());
   return { scene, sky, terrain, farPlane };
 }
 
@@ -59,6 +61,7 @@ class PropPlacer {
     private assets: Assets,
     private terrain: Terrain,
     private theme: Theme,
+    private vegetationScale = 1,
   ) {
     let seed = track.data.scenery?.seed ?? 1;
     this.rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -130,7 +133,7 @@ class PropPlacer {
   private vegetation() {
     const kinds = Object.entries(this.theme.vegetation);
     const total = kinds.reduce((a, [, w]) => a + w, 0);
-    const density = (this.track.data.scenery?.density ?? 0.7) * this.theme.vegetationDensity;
+    const density = (this.track.data.scenery?.density ?? 0.7) * this.theme.vegetationDensity * this.vegetationScale;
     const t = this.terrain;
     const step = 11;
     const x1 = t.minX + (t.nx - 1) * t.cell;

@@ -45,13 +45,13 @@ export class Sky {
 
     // Clouds: flat 6-sided blobs scattered around the sky.
     const cloudMat = basic({ color: theme.clouds, transparent: true, opacity: 0.9 });
-    for (let c = 0; c < 14; c++) {
-      const a = (c / 14) * Math.PI * 2 + noise(c, 0.5) * 0.6;
-      const elev = 0.12 + (noise(c, 3.3) + 1) * 0.12;
+    for (let n = 0; n < 14; n++) {
+      const a = (n / 14) * Math.PI * 2 + noise(n, 0.5) * 0.6;
+      const elev = 0.12 + (noise(n, 3.3) + 1) * 0.12;
       const cloud = new THREE.Mesh(new THREE.CircleGeometry(30 * k, 6), cloudMat);
       cloud.position.set(Math.sin(a), elev, Math.cos(a)).normalize().multiplyScalar(DOME * 0.9);
       cloud.lookAt(0, 0, 0);
-      cloud.scale.set(2 + (noise(c, 7.1) + 1), 0.45, 1);
+      cloud.scale.set(2 + (noise(n, 7.1) + 1), 0.45, 1);
       cloud.renderOrder = -3;
       this.group.add(cloud);
     }

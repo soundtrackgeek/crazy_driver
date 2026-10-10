@@ -23,6 +23,8 @@ import { RaceState, type RaceEvent } from './RaceState';
 import { RacingLine } from './RacingLine';
 import { GhostPlayer, GhostRecorder, GhostStore, Records, trackKey } from './Records';
 import { createTrackScene } from './TrackScene';
+import { Effects } from './Effects';
+import { qualityProfile, settings, type CameraMode } from './Settings';
 
 export type Mode = 'arcade' | 'timetrial' | 'quick' | 'test' | 'attract';
 
@@ -123,14 +125,19 @@ export class RaceSession {
   private records = { lap: false, race: false };
   private ended = false;
   private fps = 60;
+  private effects: Effects;
+  private airTime = 0;
 
   constructor(
     readonly config: SessionConfig,
     private deps: SessionDeps,
   ) {
     const { track, theme, mode } = config;
-    const world = createTrackScene(track, deps.assets, theme);
+    const world = createTrackScene(track, deps.assets, theme, qualityProfile());
     this.scene = world.scene;
+    this.effects = new Effects(theme);
+    this.scene.add(this.effects.group);
+    this.chase.mode = settings.camera;
     this.sky = world.sky;
     this.chase.camera.far = world.farPlane;
     this.chase.camera.updateProjectionMatrix();
@@ -415,6 +422,14 @@ export class RaceSession {
       }
       target = this.racers[this.camTarget];
     }
+    if (!this.paused) {
+      // Wheel effects for cars near the camera.
+      for (const r of this.racers) {
+        if (r.vehicle.pos.distanceToSquared(this.chase.camera.position) < 160 * 160) this.effects.car(r.vehicle, frameDt);
+      }
+      this.effects.update(frameDt);
+      this.shakeFor(target.vehicle, frameDt);
+    }
     this.chase.update(target.view.root, target.vehicle.speed, frameDt);
     this.sky.update(this.chase.camera);
     this.deps.retro.render(this.scene, this.chase.camera);
@@ -449,8 +464,24 @@ export class RaceSession {
       cars: this.racers.length,
       timeLeft: this.timeLeft,
       wrongWay: p.race.wrongWay && this.phase === 'racing',
-      footer: `${w}x${h} ${this.fps.toFixed(0)}fps  ESC pause  R reset  M sound  F2 res`,
+      footer: `${w}x${h} ${this.fps.toFixed(0)}fps ${this.deps.retro.stats.calls}dc  ESC pause  C camera  R reset  M sound`,
     });
+  }
+
+  /** Camera shake from impacts, landings and rough ground. */
+  private shakeFor(v: Vehicle, dt: number) {
+    if (this.wallHit > 2) this.chase.shake(Math.min(0.7, this.wallHit / 14));
+    if (v.grounded === 0) this.airTime += dt;
+    else {
+      if (this.airTime > 0.35) this.chase.shake(Math.min(0.6, this.airTime / 1.5));
+      this.airTime = 0;
+    }
+    const loose = v.wheels.some((w) => w.contact && w.surface !== 'asphalt');
+    if (loose && Math.abs(v.speed) > 8) this.chase.shake(dt * 0.35 * Math.min(1, Math.abs(v.speed) / 40));
+  }
+
+  setCameraMode(mode: CameraMode) {
+    this.chase.mode = mode;
   }
 
   setPaused(paused: boolean) {
@@ -462,6 +493,7 @@ export class RaceSession {
     this.hud?.dispose();
     this.carAudio?.dispose();
     this.opponentAudio?.dispose();
+    this.effects.dispose();
     for (const name of ['track', 'terrain', 'sky']) {
       this.scene.getObjectByName(name)?.traverse((o) => {
         if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh)) o.geometry.dispose();

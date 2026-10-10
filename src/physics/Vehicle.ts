@@ -14,6 +14,7 @@ export interface Wheel {
   slip: number; // excess force beyond grip, 0..1+
   surface: Surface;
   load: number;
+  contactPoint: THREE.Vector3; // world-space tyre contact (valid when contact)
 }
 
 // Scratch vectors (the sim is single-threaded, so sharing is safe).
@@ -89,6 +90,7 @@ export class Vehicle {
       slip: 0,
       surface: 'asphalt' as Surface,
       load: 0,
+      contactPoint: new THREE.Vector3(),
     }));
     this.updateInertia();
     this.reset(new THREE.Vector3(0, 0, 0), 0);
@@ -234,6 +236,7 @@ export class Vehicle {
 
       // Contact point and its velocity.
       const contact = anchor.addScaledVector(up, -dist);
+      w.contactPoint.copy(contact);
       _r.subVectors(contact, this.pos);
       const pv = _pv.crossVectors(this.angVel, _r).add(this.vel);
       const vLong = pv.dot(wf);
