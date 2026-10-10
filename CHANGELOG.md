@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0] - 2026-10-10
+### Added
+- M4 procedural terrain: seeded fractal-noise heightfield around the track that blends down to just below the road (cuttings and embankments), coloured by slope (rock), height (snow on alpine) and per-face variation; chunked for culling.
+- Sky backdrop: gradient dome, two rings of low-poly mountains (snow caps on alpine), an 8-sided sun and flat clouds, all centred on the camera.
+- Themes: grassland, forest, desert, alpine and coastal (with water), each with sky, fog, sun, hemisphere light, ground and shoulder colours, mountains and vegetation mix. Set by the track's `theme` or `?theme=`.
+- Vegetation scattered across the whole landscape on a jittered grid: dense near the track, sparse far away, no trees on steep slopes, nothing under water.
+- Track `terrain` settings (`seed`, `amplitude`).
+- Terrain, noise and bucket-search tests.
+
+### Changed
+- Global nearest-point lookups on the track use a 64 m bucket grid searched in rings (about 10x faster); the scene now builds in about 170 ms instead of 1.5 s.
+- The camera's far plane follows the theme's fog distance and the sky fits inside it; vegetation is batched per 250 m tile so off-screen tiles are culled.
+- Track barriers extend below the road to meet the terrain; the grass apron is replaced by the terrain, and shoulder colours come from the theme.
+
 ## [0.6.0] - 2026-10-10
 ### Added
 - M3 Blender asset pipeline: Python mesh builder, shared palette, glTF export and Workbench preview renders, run headless with `npm run assets` (`tools/build-assets.mjs` finds Blender or uses `BLENDER`).

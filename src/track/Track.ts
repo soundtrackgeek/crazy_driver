@@ -106,13 +106,65 @@ export class Track {
     return { index: ((best % this.samples.length) + this.samples.length) % this.samples.length, d: bestD };
   }
 
+  private buckets: Map<number, number[]> | null = null;
+  private static readonly BUCKET = 64;
+  private static key(ix: number, iz: number) {
+    return (ix + 32768) * 65536 + (iz + 32768);
+  }
+
+  /** Nearest sample anywhere, using a coarse grid of buckets searched in growing square rings. */
+  private nearestGlobal(x: number, z: number) {
+    const B = Track.BUCKET;
+    if (!this.buckets) {
+      this.buckets = new Map();
+      this.samples.forEach((s, i) => {
+        const k = Track.key(Math.floor(s.pos.x / B), Math.floor(s.pos.z / B));
+        const list = this.buckets!.get(k);
+        if (list) list.push(i);
+        else this.buckets!.set(k, [i]);
+      });
+    }
+    const cx = Math.floor(x / B);
+    const cz = Math.floor(z / B);
+    let best = -1;
+    let bestD = Infinity;
+    const visit = (ix: number, iz: number) => {
+      const list = this.buckets!.get(Track.key(ix, iz));
+      if (!list) return;
+      for (const i of list) {
+        const p = this.samples[i].pos;
+        const d = (p.x - x) ** 2 + (p.z - z) ** 2;
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+    };
+    for (let r = 0; r < 64; r++) {
+      if (r === 0) visit(cx, cz);
+      else {
+        for (let ix = cx - r; ix <= cx + r; ix++) {
+          visit(ix, cz - r);
+          visit(ix, cz + r);
+        }
+        for (let iz = cz - r + 1; iz <= cz + r - 1; iz++) {
+          visit(cx - r, iz);
+          visit(cx + r, iz);
+        }
+      }
+      // Anything in ring r+1 is at least r*B away.
+      if (best >= 0 && bestD <= (r * B) ** 2) break;
+    }
+    return best >= 0 ? { index: best, d: bestD } : this.nearestIndex(x, z, 0, this.samples.length - 1);
+  }
+
   /**
    * Project (x, z) onto the centre line. `hint` holds the last index for this
    * caller; a local search around it keeps per-frame queries cheap.
    */
   locate(x: number, z: number, hint: { index: number } | null, out: TrackLocation = newLocation()): TrackLocation {
     let near = hint ? this.nearestIndex(x, z, hint.index - 12, hint.index + 12) : null;
-    if (!near || near.d > 25 * 25) near = this.nearestIndex(x, z, 0, this.samples.length - 1);
+    if (!near || near.d > 25 * 25) near = this.nearestGlobal(x, z);
     if (hint) hint.index = near.index;
 
     // Project onto the segment before or after the nearest sample, whichever fits.

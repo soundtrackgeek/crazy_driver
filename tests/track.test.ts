@@ -117,3 +117,18 @@ describe('test circuit', () => {
     expect(track.samples.some((s) => s.surface === 'gravel')).toBe(true);
   });
 });
+
+describe('Track.locate global search', () => {
+  it('bucket search finds the same nearest point as a full scan', () => {
+    const track = new Track(load());
+    let seed = 42;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let k = 0; k < 300; k++) {
+      const x = -500 + rnd() * 700;
+      const z = -400 + rnd() * 800;
+      const l = track.locate(x, z, null);
+      const brute = Math.min(...track.samples.map((s) => (s.pos.x - x) ** 2 + (s.pos.z - z) ** 2));
+      expect(l.distanceSq).toBeLessThanOrEqual(brute + 1e-6);
+    }
+  });
+});

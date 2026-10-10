@@ -25,5 +25,6 @@
     { "p": [10, 0, -50], "width": 14 }
   ],
   "checkpoints": [0.25, 0.5, 0.75],
-  "scenery": { "seed": 1234, "density": 0.7 }
+  "scenery": { "seed": 1234, "density": 0.7 },
+  "terrain": { "seed": 7 }
 }

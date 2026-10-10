@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import type { Surface } from '../physics/Ground';
 import { Track, type TrackSample } from './Track';
 import { TrackGround } from './TrackGround';
+import type { Theme } from '../world/Themes';
 
 const C = (hex: number) => new THREE.Color(hex);
 const PALETTE = {
   asphalt: [C(0x55555b), C(0x4f4f55)],
   gravel: [C(0xa89068), C(0x9a8360)],
   grass: [C(0x5a9638), C(0x4f8a32)],
-  apron: [C(0x4f8a32), C(0x467d2c)],
   line: C(0xe8e8e8),
   kerbA: C(0xd02020),
   kerbB: C(0xf0f0f0),
@@ -25,7 +25,7 @@ const SURFACE_COLORS: Record<Surface, THREE.Color[]> = {
 
 const WALL_HEIGHT = 1.1;
 const WALL_THICK = 0.4;
-const APRON = 40; // grass beyond the walls
+const SKIRT = 1.6; // barrier outer face extends below the road to meet the terrain
 const KERB = 1.2;
 const KERB_CURVATURE = 1 / 120; // corners tighter than 120 m radius get kerbs
 const CHUNK = 40; // samples per mesh chunk (for frustum culling)
@@ -38,9 +38,10 @@ interface ProfilePoint {
 
 /**
  * Builds the visual track as chunked, flat-shaded, vertex-coloured meshes:
- * apron, walls, shoulders, kerbs, road with edge lines and centre dashes.
+ * walls, shoulders, kerbs, road with edge lines and centre dashes.
  */
-export function buildTrackMeshes(track: Track) {
+export function buildTrackMeshes(track: Track, theme: Theme) {
+  const shoulder = theme.shoulder.map(C);
   const group = new THREE.Group();
   group.name = 'track';
   const material = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
@@ -58,8 +59,7 @@ export function buildTrackMeshes(track: Track) {
       const pb = profile(b);
       const band = Math.floor(a.dist / 4) & 1; // alternate every 4 m for a sense of speed
       for (let k = 0; k < pa.length - 1; k++) {
-        const color = bandColor(k, pa, a, i, band);
-        if (!color) continue;
+        const color = bandColor(k, a, i, band, shoulder);
         quad(pos, col, point(a, pa[k]), point(a, pa[k + 1]), point(b, pb[k + 1]), point(b, pb[k]), color);
       }
     }
@@ -83,7 +83,7 @@ function profile(s: TrackSample): ProfilePoint[] {
   const road = (d: number) => ({ d, h: d * s.slope });
   const wallY = (side: number) => side * wall * s.slope;
   return [
-    { d: -wall - APRON, h: wallY(-1) - 3 }, // 0 apron
+    { d: -wall - WALL_THICK, h: wallY(-1) - SKIRT }, // 0 barrier skirt
     { d: -wall - WALL_THICK, h: wallY(-1) }, // 1 wall outer face
     { d: -wall - WALL_THICK, h: wallY(-1) + WALL_HEIGHT }, // 2 wall top
     { d: -wall, h: wallY(-1) + WALL_HEIGHT }, // 3 wall inner face
@@ -99,12 +99,12 @@ function profile(s: TrackSample): ProfilePoint[] {
     road(wall), // 13 wall inner face
     { d: wall, h: wallY(1) + WALL_HEIGHT }, // 14 wall top
     { d: wall + WALL_THICK, h: wallY(1) + WALL_HEIGHT }, // 15 wall outer face
-    { d: wall + WALL_THICK, h: wallY(1) }, // 16 apron
-    { d: wall + APRON, h: wallY(1) - 3 },
+    { d: wall + WALL_THICK, h: wallY(1) }, // 16 barrier skirt
+    { d: wall + WALL_THICK, h: wallY(1) - SKIRT },
   ];
 }
 
-function bandColor(k: number, _p: ProfilePoint[], s: TrackSample, i: number, band: number): THREE.Color | null {
+function bandColor(k: number, s: TrackSample, i: number, band: number, shoulder: THREE.Color[]): THREE.Color {
   const surf = SURFACE_COLORS[s.surface];
   const wallStripe = Math.floor(i / 2) & 1 ? PALETTE.wallA : PALETTE.wallB;
   const kerbStripe = i & 1 ? PALETTE.kerbA : PALETTE.kerbB;
@@ -113,7 +113,6 @@ function bandColor(k: number, _p: ProfilePoint[], s: TrackSample, i: number, ban
   switch (k) {
     case 0:
     case 16:
-      return PALETTE.apron[band];
     case 1:
     case 15:
       return wallStripe;
@@ -125,11 +124,11 @@ function bandColor(k: number, _p: ProfilePoint[], s: TrackSample, i: number, ban
       return wallStripe;
     case 4:
     case 12:
-      return PALETTE.grass[band];
+      return shoulder[band];
     case 5:
-      return leftKerb ? kerbStripe : PALETTE.grass[band];
+      return leftKerb ? kerbStripe : shoulder[band];
     case 11:
-      return rightKerb ? kerbStripe : PALETTE.grass[band];
+      return rightKerb ? kerbStripe : shoulder[band];
     case 6:
     case 10:
       return s.surface === 'asphalt' ? PALETTE.line : surf[band];

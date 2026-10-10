@@ -19,6 +19,8 @@ export interface TrackData {
   /** Checkpoint positions as fractions of the lap (0..1). Default: 4 evenly spaced. */
   checkpoints?: number[];
   scenery?: { seed: number; density: number };
+  /** Procedural landscape around the track. Amplitude defaults to the theme's. */
+  terrain?: { seed: number; amplitude?: number };
 }
 
 export const DEFAULT_WIDTH = 12;
@@ -45,5 +47,6 @@ export function parseTrack(json: unknown): TrackData {
     controlPoints: t.controlPoints,
     checkpoints: t.checkpoints,
     scenery: t.scenery,
+    terrain: t.terrain,
   };
 }

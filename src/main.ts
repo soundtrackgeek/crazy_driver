@@ -11,6 +11,7 @@ import { TrackGround } from './track/TrackGround';
 import { parseTrack } from './track/TrackData';
 import { Minimap } from './ui/Minimap';
 import { Assets } from './engine/Assets';
+import { getTheme } from './world/Themes';
 
 async function loadTrack(name: string) {
   const res = await fetch(`${import.meta.env.BASE_URL}assets/tracks/${name}.track.json`);
@@ -19,7 +20,8 @@ async function loadTrack(name: string) {
 }
 
 async function main() {
-  const trackName = new URLSearchParams(location.search).get('track') ?? 'test-circuit';
+  const params = new URLSearchParams(location.search);
+  const trackName = params.get('track') ?? 'test-circuit';
   const [track, assets] = await Promise.all([loadTrack(trackName), new Assets().load(['car_rally', 'props'])]);
 
   const isTouch = matchMedia('(pointer: coarse)').matches;
@@ -27,7 +29,10 @@ async function main() {
   let hIdx = isTouch ? 0 : 1;
 
   const retro = new RetroRenderer(heights[hIdx]);
-  const scene = createTrackScene(track, assets);
+  const theme = getTheme(params.get('theme') ?? track.data.theme);
+  const t0 = performance.now();
+  const { scene, sky, farPlane } = createTrackScene(track, assets, theme);
+  console.info(`[scene] built in ${(performance.now() - t0).toFixed(0)} ms`);
   const ground = new TrackGround(track);
   const vehicle = new Vehicle(ground);
   // Rolling start: spawn 20 m behind the line.
@@ -36,6 +41,8 @@ async function main() {
   const carView = new CarView(vehicle, assets, { primary: 0xd01818, secondary: 0xf0f0f0 });
   scene.add(carView.root);
   const chase = new ChaseCamera();
+  chase.camera.far = farPlane;
+  chase.camera.updateProjectionMatrix();
   const input = new Input(retro.renderer.domElement);
   const race = new RaceState(track);
 
@@ -72,7 +79,7 @@ async function main() {
 
   if (import.meta.env.DEV) {
     void import('./engine/DebugPanel').then((m) => m.createDebugPanel(vehicle));
-    Object.assign(window, { vehicle, race, track }); // console access for tuning
+    Object.assign(window, { vehicle, race, track, chase, scene }); // console access for tuning
   }
 
   let fps = 60;
@@ -84,6 +91,7 @@ async function main() {
     (alpha, frameDt) => {
       carView.sync(alpha);
       chase.update(carView.root, vehicle.speed, frameDt);
+      sky.update(chase.camera);
       retro.render(scene, chase.camera);
       minimap.draw([{ x: vehicle.pos.x, z: vehicle.pos.z, color: '#ff3030' }]);
 
