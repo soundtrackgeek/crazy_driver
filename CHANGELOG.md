@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1] - 2026-10-10
+### Fixed
+- Huge white wedges in the sky: the cloud loop variable shadowed the sky scale factor, so clouds grew up to about 390 m wide instead of about 23 m.
+
+### Changed
+- Backdrop mountains have jagged peaks with lit and shaded faces and snow tips (instead of flat-topped blocks); alpine mountains are darker so they stand out from the sky.
+
 ## [0.7.0] - 2026-10-10
 ### Added
 - M4 procedural terrain: seeded fractal-noise heightfield around the track that blends down to just below the road (cuttings and embankments), coloured by slope (rock), height (snow on alpine) and per-face variation; chunked for culling.

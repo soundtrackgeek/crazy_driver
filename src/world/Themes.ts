@@ -73,7 +73,7 @@ export const THEMES: Record<string, Theme> = {
     rock: 0x7a7c84,
     snow: { color: 0xf0f4f8, line: 18 },
     shoulder: [0xe4ecf2, 0xd8e2ea],
-    mountains: { far: 0xaab8d0, near: 0x7a8494, caps: 0xf4f8fc },
+    mountains: { far: 0x8492b0, near: 0x5f6878, caps: 0xf4f8fc },
     clouds: 0xffffff,
     vegetation: { tree_pine: 0.8, rock: 0.2 },
     vegetationDensity: 1.2,

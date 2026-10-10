@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { makeNoise2D } from './Noise';
 import type { Theme } from './Themes';
 
-
 /**
  * Camera-centred backdrop: gradient sky dome, two rings of low-poly mountains,
  * an 8-sided sun and flat clouds. Nothing here is fogged; it is coloured to
@@ -46,13 +45,13 @@ export class Sky {
 
     // Clouds: flat 6-sided blobs scattered around the sky.
     const cloudMat = basic({ color: theme.clouds, transparent: true, opacity: 0.9 });
-    for (let k = 0; k < 14; k++) {
-      const a = (k / 14) * Math.PI * 2 + noise(k, 0.5) * 0.6;
-      const elev = 0.12 + (noise(k, 3.3) + 1) * 0.12;
+    for (let c = 0; c < 14; c++) {
+      const a = (c / 14) * Math.PI * 2 + noise(c, 0.5) * 0.6;
+      const elev = 0.12 + (noise(c, 3.3) + 1) * 0.12;
       const cloud = new THREE.Mesh(new THREE.CircleGeometry(30 * k, 6), cloudMat);
       cloud.position.set(Math.sin(a), elev, Math.cos(a)).normalize().multiplyScalar(DOME * 0.9);
       cloud.lookAt(0, 0, 0);
-      cloud.scale.set(2 + (noise(k, 7.1) + 1), 0.45, 1);
+      cloud.scale.set(2 + (noise(c, 7.1) + 1), 0.45, 1);
       cloud.renderOrder = -3;
       this.group.add(cloud);
     }
@@ -88,24 +87,33 @@ export class Sky {
       return [Math.sin(a) * radius, h, Math.cos(a) * radius];
     };
     const base = -120;
-    const dark = color.clone().multiplyScalar(0.85);
+    const lit = color;
+    const shade = color.clone().multiplyScalar(0.78);
+    const push = (v: [number, number, number], c: THREE.Color) => {
+      pos.push(...v);
+      col.push(c.r, c.g, c.b);
+    };
     for (let k = 0; k < segs; k++) {
-      const h0 = peak(k);
-      const h1 = peak(k + 1);
-      const quad: [number, number, number][] = [pt(k, base), pt(k + 1, base), pt(k + 1, h1), pt(k, h0)];
-      // Alternate light/shadow faces like faceted rock; snow caps on tall peaks.
-      const face = k % 2 ? color : dark;
-      const topColor = caps && Math.max(h0, h1) > maxH * 0.72 ? caps : face;
-      const tris = [
-        [quad[0], quad[1], quad[2]],
-        [quad[0], quad[2], quad[3]],
-      ];
-      for (const t of tris) {
-        for (const v of t) {
-          pos.push(...v);
-          const c = v[1] > maxH * 0.6 ? topColor : v[1] <= base ? horizon : face;
-          col.push(c.r, c.g, c.b);
-        }
+      // Saddle heights at segment edges, a sharp peak in the middle → jagged ridgeline.
+      const h0 = peak(k) * 0.75;
+      const h1 = peak(k + 1) * 0.75;
+      const hm = Math.max(h0, h1) + (maxH - minH) * 0.25 * (0.4 + Math.abs(noise(k * 1.7 + offset, 4.2)));
+      const b0 = pt(k, base);
+      const b1 = pt(k + 1, base);
+      const t0 = pt(k, h0);
+      const t1 = pt(k + 1, h1);
+      const m = pt(k + 0.5, hm);
+      const bm = pt(k + 0.5, base);
+      // Left half lit, right half in shadow, like faceted rock lit from one side.
+      const snowy = caps !== null && hm > maxH * 0.8;
+      const tip = (c: THREE.Color) => (snowy ? caps! : c);
+      for (const [a, b, c, shadeColor] of [
+        [b0, bm, m, lit],
+        [b0, m, t0, lit],
+        [bm, b1, t1, shade],
+        [bm, t1, m, shade],
+      ] as [typeof b0, typeof b0, typeof b0, THREE.Color][]) {
+        for (const v of [a, b, c]) push(v, v === m ? tip(shadeColor) : v[1] <= base ? horizon : shadeColor);
       }
     }
     const geo = new THREE.BufferGeometry();
