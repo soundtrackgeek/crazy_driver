@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.2] - 2026-10-10
+### Changed
+- Backdrop mountains are rebuilt from a few individual peaks of random width and height (skyline = highest peak at each angle, plus ridge noise) at 240 columns, instead of evenly spaced identical spikes that looked like corrugated metal. Slopes are lit or shaded by direction and steepness; snow covers only the parts above a ragged snowline. The near ring is foothills without snow.
+
 ## [0.7.1] - 2026-10-10
 ### Fixed
 - Huge white wedges in the sky: the cloud loop variable shadowed the sky scale factor, so clouds grew up to about 390 m wide instead of about 23 m.

@@ -60,60 +60,84 @@ export class Sky {
     const far = new THREE.Color(theme.mountains.far).lerp(horizon, 0.25);
     const near = new THREE.Color(theme.mountains.near).lerp(horizon, 0.15);
     const caps = theme.mountains.caps !== undefined ? new THREE.Color(theme.mountains.caps) : null;
-    this.group.add(this.ring(noise, DOME * 0.92, 30 * k, 85 * k, far, caps, horizon, 0, -2));
-    this.group.add(this.ring(noise, DOME * 0.86, 12 * k, 40 * k, near, caps, horizon, 50, -1));
+    this.group.add(this.ring(noise, DOME * 0.92, 9, 95 * k, far, caps, horizon, seed * 7 + 1, -2));
+    this.group.add(this.ring(noise, DOME * 0.86, 14, 38 * k, near, null, horizon, seed * 13 + 5, -1));
   }
 
+  /**
+   * A ring of mountains around the horizon. The skyline is the maximum of a few
+   * individual peaks of random width and height (so they overlap like a real
+   * range), plus a little ridge noise. Slopes facing one way are lit, the
+   * others shaded; snow covers everything above a jagged snowline.
+   */
   private ring(
     noise: (x: number, y: number) => number,
     radius: number,
-    minH: number,
+    count: number,
     maxH: number,
     color: THREE.Color,
     caps: THREE.Color | null,
     horizon: THREE.Color,
-    offset: number,
+    seed: number,
     order: number,
   ) {
-    const segs = 90;
+    let s = seed;
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const peaks = Array.from({ length: count }, () => ({
+      at: rnd() * Math.PI * 2,
+      width: 0.1 + rnd() * 0.42, // radians from peak to foot
+      height: maxH * (0.35 + rnd() * 0.65),
+      sharp: 1 + rnd() * 0.8,
+    }));
+    const skyline = (a: number) => {
+      let h = maxH * 0.08 * (1 + noise(a * 2 + seed, 1.5)); // low foothills everywhere
+      for (const p of peaks) {
+        let d = Math.abs(a - p.at);
+        d = Math.min(d, Math.PI * 2 - d);
+        if (d < p.width) h = Math.max(h, p.height * Math.pow(1 - d / p.width, p.sharp));
+      }
+      return h + maxH * 0.05 * noise(a * 25 + seed, 7.7); // ridge roughness
+    };
+
+    const segs = 240;
+    const base = -120;
+    const snowLine = maxH * 0.62;
     const pos: number[] = [];
     const col: number[] = [];
-    const peak = (k: number) => {
-      const n = noise(k * 0.18 + offset, offset) * 0.7 + noise(k * 0.55 + offset, 9 + offset) * 0.3;
-      return minH + (maxH - minH) * Math.max(0, n + 0.45);
-    };
-    const pt = (k: number, h: number): [number, number, number] => {
-      const a = (k / segs) * Math.PI * 2;
-      return [Math.sin(a) * radius, h, Math.cos(a) * radius];
-    };
-    const base = -120;
-    const lit = color;
-    const shade = color.clone().multiplyScalar(0.78);
+    const pt = (a: number, h: number): [number, number, number] => [Math.sin(a) * radius, h, Math.cos(a) * radius];
     const push = (v: [number, number, number], c: THREE.Color) => {
       pos.push(...v);
       col.push(c.r, c.g, c.b);
     };
+    const quad = (a0: number, a1: number, lo0: number, lo1: number, hi0: number, hi1: number, cLo: THREE.Color, cHi: THREE.Color) => {
+      const p = [pt(a0, lo0), pt(a1, lo1), pt(a1, hi1), pt(a0, hi0)];
+      for (const [v, c] of [[p[0], cLo], [p[1], cLo], [p[2], cHi], [p[0], cLo], [p[2], cHi], [p[3], cHi]] as const) push(v, c);
+    };
+
+    const faceColor = new THREE.Color();
     for (let k = 0; k < segs; k++) {
-      // Saddle heights at segment edges, a sharp peak in the middle → jagged ridgeline.
-      const h0 = peak(k) * 0.75;
-      const h1 = peak(k + 1) * 0.75;
-      const hm = Math.max(h0, h1) + (maxH - minH) * 0.25 * (0.4 + Math.abs(noise(k * 1.7 + offset, 4.2)));
-      const b0 = pt(k, base);
-      const b1 = pt(k + 1, base);
-      const t0 = pt(k, h0);
-      const t1 = pt(k + 1, h1);
-      const m = pt(k + 0.5, hm);
-      const bm = pt(k + 0.5, base);
-      // Left half lit, right half in shadow, like faceted rock lit from one side.
-      const snowy = caps !== null && hm > maxH * 0.8;
-      const tip = (c: THREE.Color) => (snowy ? caps! : c);
-      for (const [a, b, c, shadeColor] of [
-        [b0, bm, m, lit],
-        [b0, m, t0, lit],
-        [bm, b1, t1, shade],
-        [bm, t1, m, shade],
-      ] as [typeof b0, typeof b0, typeof b0, THREE.Color][]) {
-        for (const v of [a, b, c]) push(v, v === m ? tip(shadeColor) : v[1] <= base ? horizon : shadeColor);
+      const a0 = (k / segs) * Math.PI * 2;
+      const a1 = ((k + 1) / segs) * Math.PI * 2;
+      const h0 = skyline(a0);
+      const h1 = skyline(a1);
+      // Lit when the slope rises to the right, shaded when it falls; steeper = stronger.
+      const slope = (h1 - h0) / ((a1 - a0) * radius);
+      faceColor.copy(color).multiplyScalar(THREE.MathUtils.clamp(0.92 + slope * 0.5, 0.62, 1.12));
+      const fadeBase = faceColor.clone().lerp(horizon, 0.85);
+
+      if (caps) {
+        // Snowline wobbles so caps have ragged edges.
+        const sl0 = snowLine + maxH * 0.08 * noise(a0 * 9, 3.1);
+        const sl1 = snowLine + maxH * 0.08 * noise(a1 * 9, 3.1);
+        const m0 = Math.min(h0, sl0);
+        const m1 = Math.min(h1, sl1);
+        quad(a0, a1, base, base, m0, m1, fadeBase, faceColor);
+        if (h0 > sl0 || h1 > sl1) {
+          const snow = caps.clone().multiplyScalar(THREE.MathUtils.clamp(0.95 + slope * 0.3, 0.8, 1.05));
+          quad(a0, a1, m0, m1, Math.max(h0, m0), Math.max(h1, m1), snow, snow);
+        }
+      } else {
+        quad(a0, a1, base, base, h0, h1, fadeBase, faceColor);
       }
     }
     const geo = new THREE.BufferGeometry();
