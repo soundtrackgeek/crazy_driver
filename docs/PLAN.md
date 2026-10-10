@@ -203,7 +203,7 @@ Speedometer/tacho (pixel-art dial), gear, lap/time, position, minimap from the s
 
 | # | Milestone | Deliverable |
 |---|---|---|
-| **M0** | Scaffold | Vite + TS + three.js, game loop, retro low-res render target, input. |
+| **M0** ✅ | Scaffold | Vite + TS + three.js, game loop, retro low-res render target, input. |
 | **M1** | Drivable box | Arcade vehicle physics on a flat plane, chase camera, debug HUD. |
 | **M2** | Spline track | Track JSON → road mesh, walls, surfaces, lap/checkpoint logic, one test track. |
 | **M3** | Blender pipeline | Headless build script, first car + 10 props exported to `.glb`, loaded in game. |
