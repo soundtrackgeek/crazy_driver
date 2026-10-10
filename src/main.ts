@@ -10,6 +10,7 @@ import { Track } from './track/Track';
 import { TrackGround } from './track/TrackGround';
 import { parseTrack } from './track/TrackData';
 import { Minimap } from './ui/Minimap';
+import { Assets } from './engine/Assets';
 
 async function loadTrack(name: string) {
   const res = await fetch(`${import.meta.env.BASE_URL}assets/tracks/${name}.track.json`);
@@ -19,20 +20,20 @@ async function loadTrack(name: string) {
 
 async function main() {
   const trackName = new URLSearchParams(location.search).get('track') ?? 'test-circuit';
-  const track = await loadTrack(trackName);
+  const [track, assets] = await Promise.all([loadTrack(trackName), new Assets().load(['car_rally', 'props'])]);
 
   const isTouch = matchMedia('(pointer: coarse)').matches;
   const heights = [200, 270, 400]; // chunky / normal / sharp
   let hIdx = isTouch ? 0 : 1;
 
   const retro = new RetroRenderer(heights[hIdx]);
-  const scene = createTrackScene(track);
+  const scene = createTrackScene(track, assets);
   const ground = new TrackGround(track);
   const vehicle = new Vehicle(ground);
   // Rolling start: spawn 20 m behind the line.
   const spawn = track.sampleAtDist(-20);
   vehicle.reset(spawn.pos, Math.atan2(spawn.tangent.x, spawn.tangent.z));
-  const carView = new CarView(vehicle);
+  const carView = new CarView(vehicle, assets, { primary: 0xd01818, secondary: 0xf0f0f0 });
   scene.add(carView.root);
   const chase = new ChaseCamera();
   const input = new Input(retro.renderer.domElement);

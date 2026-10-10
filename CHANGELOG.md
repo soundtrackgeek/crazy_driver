@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0] - 2026-10-10
+### Added
+- M3 Blender asset pipeline: Python mesh builder, shared palette, glTF export and Workbench preview renders, run headless with `npm run assets` (`tools/build-assets.mjs` finds Blender or uses `BLENDER`).
+- Rally hatchback model (492 tris) with livery key colours, bonnet lamp pod, roof wing, stripes, and a separate wheel mesh.
+- Prop kit (`props.glb`): pine, broadleaf tree, bush, rock, tyre stack, cone, chevron sign, lamp post, grandstand with crowd, house, billboard.
+- In-game asset loader with a shared flat-shaded vertex-colour material and runtime livery recolouring.
+- Seeded prop placement: mixed vegetation, chevron boards and tyre stacks on the outside of tight bends (mirrored for left bends), grandstand, lamp posts and cones at the start, billboards on straights, houses.
+
+### Changed
+- The car is now the Blender model; wheels on the right side are rotated so rims face outwards.
+
 ## [0.5.0] - 2026-10-10
 ### Added
 - M2 spline tracks: `*.track.json` format with validation, centripetal Catmull-Rom centre line resampled every 2 m with width, banking, surface and curvature per sample.

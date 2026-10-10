@@ -206,7 +206,7 @@ Speedometer/tacho (pixel-art dial), gear, lap/time, position, minimap from the s
 | **M0** ✅ | Scaffold | Vite + TS + three.js, game loop, retro low-res render target, input. |
 | **M1** ✅ | Drivable box | Arcade vehicle physics on a flat plane, chase camera, debug HUD. |
 | **M2** ✅ | Spline track | Track JSON → road mesh, walls, surfaces, lap/checkpoint logic, one test track. |
-| **M3** | Blender pipeline | Headless build script, first car + 10 props exported to `.glb`, loaded in game. |
+| **M3** ✅ | Blender pipeline | Headless build script, first car + 10 props exported to `.glb`, loaded in game. |
 | **M4** | Scenery | Terrain + seeded prop scattering + sky/fog per theme. First "looks like the 90s" screenshot. |
 | **M5** | Audio | Engine synth, tyre/surface sounds, SFX, music player. |
 | **M6** | Track editor | Edit, test-drive, save/load, undo. |

@@ -1,13 +1,14 @@
 {
   "name": "crazy-driver",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "assets": "node tools/build-assets.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"
