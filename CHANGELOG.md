@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.8.0] - 2026-10-10
+### Added
+- M5 audio, fully synthesised with Web Audio:
+  - Engine: two looping waves of 4-cylinder firing pulses (on-load growl and off-load burble) pitched by rpm, crossfaded by throttle, low-pass and saturation, free-revving on the grid and in the air, rev-limiter stutter.
+  - Tyre squeal on asphalt, gravel and grass crunch, road roar and wind, all driven by the physics.
+  - One-shots: wall impacts scaled by speed, landing thumps, gear-shift clunks, countdown beeps, checkpoint, lap, final-lap and finish jingles, wrong-way buzz.
+  - Announcer using the browser's speech synthesis (can be turned off).
+  - Tracker-style sequencer with synthesised bass, lead, arp, pad and drums, and two original songs ("Full Throttle", "Desert Turbo").
+  - Custom music: add your own audio files, stored in IndexedDB; music modes Built-in / My music / Both; next and previous track.
+  - Sound panel (M or ♪ button) with master/music/sfx volumes saved to localStorage.
+- Race start: "PRESS ANY KEY" (which also unlocks browser audio), then a 3-2-1-GO countdown with the car held on the handbrake.
+- Tests for note parsing, the engine waveform and song validity.
+
+### Fixed
+- README controls table now lists the F1 tuning panel.
+
 ## [0.7.2] - 2026-10-10
 ### Changed
 - Backdrop mountains are rebuilt from a few individual peaks of random width and height (skyline = highest peak at each angle, plus ridge noise) at 240 columns, instead of evenly spaced identical spikes that looked like corrugated metal. Slopes are lit or shaded by direction and steepness; snow covers only the parts above a ragged snowline. The near ring is foothills without snow.
