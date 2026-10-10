@@ -38,6 +38,18 @@ export class Sfx {
     src.stop(start + dur + 0.05);
   }
 
+  /** Menu cursor blip. */
+  tick() {
+    this.tone(990, this.ctx.currentTime, 0.04, 'square', 0.08);
+  }
+
+  /** Menu confirm. */
+  select() {
+    const t = this.ctx.currentTime;
+    this.tone(660, t, 0.06, 'square', 0.12);
+    this.tone(990, t + 0.06, 0.1, 'square', 0.12);
+  }
+
   /** Countdown beep: low for 3-2-1, high for GO. */
   beep(go = false) {
     const t = this.ctx.currentTime;

@@ -30,7 +30,10 @@ export class AudioPanel {
       if (e.target instanceof HTMLInputElement) return;
       if (e.code === 'KeyM') this.toggle();
       if (e.code === 'KeyN') music.next();
-      if (e.code === 'Escape' && !this.root.hidden) this.toggle();
+      if (e.code === 'Escape' && !this.root.hidden) {
+        e.preventDefault();
+        this.toggle();
+      }
     });
     music.onChange = () => this.render();
     this.render();

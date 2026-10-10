@@ -24,6 +24,8 @@ export class CarAudio {
   private roar: GainNode;
   private wind: GainNode;
 
+  private out: GainNode;
+  private sources: AudioScheduledSourceNode[] = [];
   private rpm = 900;
   private lastGear = 1;
   private airTime = 0;
@@ -33,7 +35,14 @@ export class CarAudio {
     private sfx: Sfx,
   ) {
     const ctx = audio.ctx;
-    const out = audio.sfx;
+    this.out = ctx.createGain();
+    this.out.connect(audio.sfx);
+    const out = this.out;
+    const noise = () => {
+      const src = audio.noiseSource();
+      this.sources.push(src);
+      return src;
+    };
     const loop = (brightness: number, seed: number) => {
       const data = engineWave(ctx.sampleRate, { firingHz: FIRING_HZ, cycles: 48, brightness, roughness: 0.25, seed });
       const buf = ctx.createBuffer(1, data.length, ctx.sampleRate);
@@ -43,6 +52,7 @@ export class CarAudio {
       src.loop = true;
       src.start();
       this.engineSources.push(src);
+      this.sources.push(src);
       return src;
     };
 
@@ -73,6 +83,7 @@ export class CarAudio {
     lfo.connect(lfoGain).connect(this.squealOsc.frequency);
     lfo.start();
     this.squealOsc.start();
+    this.sources.push(lfo, this.squealOsc);
     const squealNoise = ctx.createBiquadFilter();
     squealNoise.type = 'bandpass';
     squealNoise.frequency.value = 1300;
@@ -80,7 +91,7 @@ export class CarAudio {
     const oscLevel = ctx.createGain();
     oscLevel.gain.value = 0.35;
     this.squealOsc.connect(oscLevel).connect(this.squeal);
-    audio.noiseSource().connect(squealNoise).connect(this.squeal);
+    noise().connect(squealNoise).connect(this.squeal);
     this.squeal.connect(out);
 
     // Gravel / grass crunch: low-passed noise.
@@ -88,7 +99,7 @@ export class CarAudio {
     this.crunchFilter.type = 'lowpass';
     this.crunch = ctx.createGain();
     this.crunch.gain.value = 0;
-    audio.noiseSource().connect(this.crunchFilter).connect(this.crunch).connect(out);
+    noise().connect(this.crunchFilter).connect(this.crunch).connect(out);
 
     // Tyre roar on asphalt and wind at speed.
     const roarFilter = ctx.createBiquadFilter();
@@ -96,14 +107,24 @@ export class CarAudio {
     roarFilter.frequency.value = 260;
     this.roar = ctx.createGain();
     this.roar.gain.value = 0;
-    audio.noiseSource().connect(roarFilter).connect(this.roar).connect(out);
+    noise().connect(roarFilter).connect(this.roar).connect(out);
     const windFilter = ctx.createBiquadFilter();
     windFilter.type = 'bandpass';
     windFilter.frequency.value = 600;
     windFilter.Q.value = 0.4;
     this.wind = ctx.createGain();
     this.wind.gain.value = 0;
-    audio.noiseSource().connect(windFilter).connect(this.wind).connect(out);
+    noise().connect(windFilter).connect(this.wind).connect(out);
+  }
+
+  /** Silence: used while paused. */
+  mute(muted: boolean) {
+    this.out.gain.setTargetAtTime(muted ? 0 : 1, this.audio.ctx.currentTime, 0.05);
+  }
+
+  dispose() {
+    for (const src of this.sources) src.stop();
+    this.out.disconnect();
   }
 
   /** `wallHit` = strongest wall impact (m/s) across the physics steps of this frame. */

@@ -327,6 +327,17 @@ export class Vehicle {
     this.collideWalls();
   }
 
+  /** Velocity of a world-space point on the body (new vector). */
+  velocityAt(point: THREE.Vector3) {
+    return new THREE.Vector3().subVectors(point, this.pos).cross(this.angVel).negate().add(this.vel);
+  }
+
+  /** Apply an instantaneous impulse (N·s) at a world-space point. */
+  applyImpulse(impulse: THREE.Vector3, point: THREE.Vector3) {
+    this.vel.addScaledVector(impulse, 1 / this.params.mass);
+    this.angVel.add(this.applyInvInertia(new THREE.Vector3().subVectors(point, this.pos).cross(impulse)));
+  }
+
   /** World-space inverse inertia applied to v (in place). */
   private applyInvInertia(v: THREE.Vector3) {
     _qInv.copy(this.quat).invert();

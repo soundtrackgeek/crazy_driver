@@ -12,6 +12,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the stack, approach, graphics/asset pipelin
 - **M4 (scenery)** done: procedural terrain that blends into the road (cuttings and embankments), a sky dome with low-poly mountains, sun and clouds, and five themes (grassland, forest, desert, alpine, coastal) that set the sky, fog, light, ground colours and vegetation.
 - **M5 (audio)** done: all sound is synthesised with Web Audio (no sample files): an engine that follows the revs and throttle, tyre squeal, gravel crunch, wind, impacts and landings, race jingles, a speech announcer, a 3-2-1-GO countdown, an original two-song tracker soundtrack, and your own music files.
 - **M6 (track editor)** done: build tracks in a 3D editor with live preview, undo/redo, validation warnings, a saved-track library, JSON download/upload and one-key test drives.
+- **M7 (race game)** done: menus, three modes (Arcade, Time Trial, Quick Race), AI opponents with racing lines and catch-up, car-to-car collisions, race positions, results, pause, ghost cars and per-track records.
 
 ## Getting started
 Requires Node.js 20+.
@@ -22,6 +23,15 @@ npm run dev      # dev server at http://localhost:5173
 npm run build    # type-check + production build into dist/
 npm test         # physics tests (Vitest)
 ```
+
+## Game modes
+- **Arcade:** race 5 opponents against the clock, Sega Rally style. Every checkpoint and lap gives **EXTENDED PLAY**; if the timer reaches zero it's game over.
+- **Time Trial:** drive alone against a ghost of your best lap. Best lap and best race times are saved per track layout.
+- **Quick Race:** choose the laps (1–9) and opponents (1–7).
+
+Pick the track (built-in or saved from the editor) and your car's colours in the setup menu. Menus work with arrows + Enter/Esc, mouse/touch, or a gamepad (d-pad/stick, A, B). Press **Esc** or **P** in a race to pause.
+
+`?track=<file>` skips the menus and starts a quick race on that track.
 
 Open the track editor at `http://localhost:5173/editor.html`.
 
@@ -91,6 +101,7 @@ Tracks are JSON files (`*.track.json`). The road is a smooth closed curve throug
 ## Controls
 | Action | Keyboard | Gamepad | Touch |
 |---|---|---|---|
+| Pause | Esc / P | – | – |
 | Steer | Arrows / A D | Left stick | Drag on left half |
 | Gas | Up / W | RT or A | Right half, top |
 | Brake / reverse | Down / S | LT | Right half, bottom |

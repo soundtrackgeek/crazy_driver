@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.10.0] - 2026-10-10
+### Added
+- M7 race game:
+  - AI drivers: racing line pulled to the inside of corners, corner-speed profile from curvature and grip, braking planned over the stopping distance, look-ahead steering, personalities (skill, line, aggression), catch-up that slows leaders and helps stragglers, and stuck/off-track recovery.
+  - Car-to-car collisions (two circles per car, impulses at the contact point) with impact sounds.
+  - `RaceSession`: grid starts with the player at the back, live positions, finish order, the AI drives the player's car home after the finish, pause, clean disposal.
+  - Modes: Arcade (timer with checkpoint and lap extensions, game over), Time Trial (ghost of your best lap, recorded at 20 Hz), Quick Race (1-9 laps, 1-7 opponents).
+  - Per-track records (best lap and race) keyed by layout, with ghost storage.
+  - Menus: title, main menu, race setup (track incl. editor tracks, car livery, laps, opponents), loading, pause and results; keyboard, mouse/touch and gamepad navigation with menu sounds; an attract-mode AI race runs behind the menus.
+  - HUD: big race position, arcade timer with low-time warning; eight liveries.
+  - Positional engine sounds for opponents with distance falloff and Doppler shift.
+  - `public/assets/tracks/index.json` manifest of built-in tracks.
+- Tests: AI completes a lap, six-car pack race with collisions, car collisions, ghost recording/playback, track keys, ordinals.
+
+### Changed
+- `main.ts` is now an app controller (menus, sessions); the race logic moved into `RaceSession` and the HUD into `Hud`.
+- `?track=<file>` starts a quick race directly; editor test drives still return to the editor with Esc.
+
+### Fixed
+- Elements with the `hidden` attribute could still be shown when CSS set a `display` value.
+
 ## [0.9.0] - 2026-10-10
 ### Added
 - M6 track editor (`editor.html`, a second Vite page):

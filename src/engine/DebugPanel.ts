@@ -52,11 +52,17 @@ export async function createDebugPanel(vehicle: Vehicle) {
   gui.add({ 'Copy JSON': () => navigator.clipboard.writeText(JSON.stringify(p, null, 2)) }, 'Copy JSON');
   gui.close();
 
-  window.addEventListener('keydown', (e) => {
+  const onKey = (e: KeyboardEvent) => {
     if (e.code === 'F1') {
       e.preventDefault();
       gui.show(gui._hidden);
     }
-  });
-  return gui;
+  };
+  window.addEventListener('keydown', onKey);
+  return {
+    destroy() {
+      window.removeEventListener('keydown', onKey);
+      gui.destroy();
+    },
+  };
 }

@@ -210,7 +210,7 @@ Speedometer/tacho (pixel-art dial), gear, lap/time, position, minimap from the s
 | **M4** ✅ | Scenery | Terrain + seeded prop scattering + sky/fog per theme. First "looks like the 90s" screenshot. |
 | **M5** ✅ | Audio | Engine synth, tyre/surface sounds, SFX, music player. |
 | **M6** ✅ | Track editor | Edit, test-drive, save/load, undo. |
-| **M7** | Race game | AI opponents, positions, menus, modes (Arcade / Time Trial / Quick Race), ghosts. |
+| **M7** ✅ | Race game | AI opponents, positions, menus, modes (Arcade / Time Trial / Quick Race), ghosts. |
 | **M8** | Content | 3 cars × liveries, 4 themed tracks built in the editor. |
 | **M9** | Polish | Particles, skid marks, camera feel, DOS-mode post effect, gamepad, touch controls & mobile perf profile, custom MP3 playlist, settings, performance pass, deploy. |
 
